@@ -1,0 +1,610 @@
+{
+  "version": "v1",
+  "aggregate": {
+    "products": 10,
+    "completed": 10,
+    "category_accuracy": 1.0,
+    "competitor_precision_strict": 0.84,
+    "competitor_precision_lenient": 1.0,
+    "pricing_tiers_evaluated": 16,
+    "pricing_accuracy": 1.0,
+    "citation_coverage": 1.0,
+    "total_validation_flags": 1,
+    "mean_latency_s": 142.3,
+    "mean_cost_cents": 33.96
+  },
+  "products": [
+    {
+      "url": "linear.app",
+      "group": "established",
+      "ok": true,
+      "error": null,
+      "run_id": 1,
+      "category": "product development and issue tracking software for teams and AI agents",
+      "category_ok": true,
+      "competitors": [
+        {
+          "name": "Jira",
+          "domain": "atlassian.com",
+          "label": "relevant"
+        },
+        {
+          "name": "GitHub",
+          "domain": "github.com",
+          "label": "relevant"
+        },
+        {
+          "name": "Asana",
+          "domain": "asana.com",
+          "label": "relevant"
+        },
+        {
+          "name": "ClickUp",
+          "domain": "clickup.com",
+          "label": "relevant"
+        },
+        {
+          "name": "Shortcut",
+          "domain": "shortcut.com",
+          "label": "relevant"
+        }
+      ],
+      "strict_precision": 1.0,
+      "lenient_precision": 1.0,
+      "pricing": [
+        {
+          "domain": "linear.app",
+          "tier_contains": "Basic",
+          "expected": 10.0,
+          "got": 10.0,
+          "status": "correct"
+        },
+        {
+          "domain": "linear.app",
+          "tier_contains": "Business",
+          "expected": 16.0,
+          "got": 16.0,
+          "status": "correct"
+        },
+        {
+          "domain": "shortcut.com",
+          "tier_contains": "Team",
+          "expected": 8.5,
+          "got": 8.5,
+          "status": "correct"
+        },
+        {
+          "domain": "shortcut.com",
+          "tier_contains": "Business",
+          "expected": 12.0,
+          "got": 12.0,
+          "status": "correct"
+        },
+        {
+          "domain": "plane.so",
+          "tier_contains": "Pro",
+          "expected": 6.0,
+          "got": null,
+          "status": "not_evaluated"
+        },
+        {
+          "domain": "monday.com",
+          "tier_contains": "Basic",
+          "expected": 9.0,
+          "got": null,
+          "status": "not_evaluated"
+        },
+        {
+          "domain": "monday.com",
+          "tier_contains": "Standard",
+          "expected": 12.0,
+          "got": null,
+          "status": "not_evaluated"
+        }
+      ],
+      "citation_coverage": 1.0,
+      "flag_count": 0,
+      "latency_s": 132.1,
+      "cost_cents": 33.1,
+      "tokens": 81712
+    },
+    {
+      "url": "slack.com",
+      "group": "established",
+      "ok": true,
+      "error": null,
+      "run_id": 2,
+      "category": "AI-powered team collaboration and messaging platform for businesses",
+      "category_ok": true,
+      "competitors": [
+        {
+          "name": "Microsoft Teams",
+          "domain": "microsoft.com",
+          "label": "relevant"
+        },
+        {
+          "name": "Twist",
+          "domain": "twist.com",
+          "label": "relevant"
+        },
+        {
+          "name": "Mattermost",
+          "domain": "mattermost.com",
+          "label": "relevant"
+        },
+        {
+          "name": "Rocket.Chat",
+          "domain": "rocket.chat",
+          "label": "relevant"
+        },
+        {
+          "name": "Google Chat",
+          "domain": "workspace.google.com",
+          "label": "defensible_unknown"
+        }
+      ],
+      "strict_precision": 0.8,
+      "lenient_precision": 1.0,
+      "pricing": [
+        {
+          "domain": "twist.com",
+          "tier_contains": "Unlimited",
+          "expected": 6.0,
+          "got": 6.0,
+          "status": "correct"
+        }
+      ],
+      "citation_coverage": 1.0,
+      "flag_count": 0,
+      "latency_s": 118.2,
+      "cost_cents": 30.6,
+      "tokens": 78418
+    },
+    {
+      "url": "notion.com",
+      "group": "established",
+      "ok": true,
+      "error": null,
+      "run_id": 3,
+      "category": "AI-powered all-in-one workspace and collaboration software for teams",
+      "category_ok": true,
+      "competitors": [
+        {
+          "name": "Coda",
+          "domain": "coda.io",
+          "label": "relevant"
+        },
+        {
+          "name": "ClickUp",
+          "domain": "clickup.com",
+          "label": "relevant"
+        },
+        {
+          "name": "Airtable",
+          "domain": "airtable.com",
+          "label": "relevant"
+        },
+        {
+          "name": "Confluence",
+          "domain": "atlassian.com",
+          "label": "relevant"
+        },
+        {
+          "name": "Nuclino",
+          "domain": "nuclino.com",
+          "label": "defensible_unknown"
+        }
+      ],
+      "strict_precision": 0.8,
+      "lenient_precision": 1.0,
+      "pricing": [
+        {
+          "domain": "airtable.com",
+          "tier_contains": "Team",
+          "expected": 20.0,
+          "got": 20.0,
+          "status": "correct"
+        },
+        {
+          "domain": "airtable.com",
+          "tier_contains": "Business",
+          "expected": 45.0,
+          "got": 45.0,
+          "status": "correct"
+        },
+        {
+          "domain": "asana.com",
+          "tier_contains": "Starter",
+          "expected": 10.99,
+          "got": null,
+          "status": "not_evaluated"
+        },
+        {
+          "domain": "asana.com",
+          "tier_contains": "Advanced",
+          "expected": 24.99,
+          "got": null,
+          "status": "not_evaluated"
+        }
+      ],
+      "citation_coverage": 1.0,
+      "flag_count": 0,
+      "latency_s": 124.7,
+      "cost_cents": 31.7,
+      "tokens": 74231
+    },
+    {
+      "url": "figma.com",
+      "group": "established",
+      "ok": true,
+      "error": null,
+      "run_id": 4,
+      "category": "collaborative interface design and prototyping platform for product teams",
+      "category_ok": true,
+      "competitors": [
+        {
+          "name": "Sketch",
+          "domain": "sketch.com",
+          "label": "relevant"
+        },
+        {
+          "name": "Penpot",
+          "domain": "penpot.app",
+          "label": "relevant"
+        },
+        {
+          "name": "Uizard",
+          "domain": "uizard.io",
+          "label": "defensible_unknown"
+        },
+        {
+          "name": "Mockplus",
+          "domain": "mockplus.com",
+          "label": "defensible_unknown"
+        },
+        {
+          "name": "Axure",
+          "domain": "axure.com",
+          "label": "relevant"
+        }
+      ],
+      "strict_precision": 0.6,
+      "lenient_precision": 1.0,
+      "pricing": [],
+      "citation_coverage": 1.0,
+      "flag_count": 0,
+      "latency_s": 152.3,
+      "cost_cents": 35.6,
+      "tokens": 103289
+    },
+    {
+      "url": "tailscale.com",
+      "group": "niche_b2b",
+      "ok": true,
+      "error": null,
+      "run_id": 5,
+      "category": "Zero Trust network connectivity and secure access platform (VPN replacement) for engineering, IT, and security teams",
+      "category_ok": true,
+      "competitors": [
+        {
+          "name": "Twingate",
+          "domain": "twingate.com",
+          "label": "relevant"
+        },
+        {
+          "name": "T:ZeroTier",
+          "domain": "zerotier.com",
+          "label": "relevant"
+        },
+        {
+          "name": "NetBird",
+          "domain": "netbird.io",
+          "label": "relevant"
+        },
+        {
+          "name": "Tailnet:Netmaker",
+          "domain": "netmaker.io",
+          "label": "relevant"
+        },
+        {
+          "name": "Cloudflare (Zero Trust)",
+          "domain": "cloudflare.com",
+          "label": "relevant"
+        }
+      ],
+      "strict_precision": 1.0,
+      "lenient_precision": 1.0,
+      "pricing": [
+        {
+          "domain": "tailscale.com",
+          "tier_contains": "Standard",
+          "expected": 8.0,
+          "got": 8.0,
+          "status": "correct"
+        },
+        {
+          "domain": "tailscale.com",
+          "tier_contains": "Premium",
+          "expected": 18.0,
+          "got": 18.0,
+          "status": "correct"
+        },
+        {
+          "domain": "twingate.com",
+          "tier_contains": "Teams",
+          "expected": 5.0,
+          "got": 5.0,
+          "status": "correct"
+        },
+        {
+          "domain": "twingate.com",
+          "tier_contains": "Business",
+          "expected": 10.0,
+          "got": 10.0,
+          "status": "correct"
+        },
+        {
+          "domain": "zerotier.com",
+          "tier_contains": "Professional",
+          "expected": 2.0,
+          "got": 2.0,
+          "status": "correct"
+        }
+      ],
+      "citation_coverage": 1.0,
+      "flag_count": 0,
+      "latency_s": 154.7,
+      "cost_cents": 43.9,
+      "tokens": 110029
+    },
+    {
+      "url": "posthog.com",
+      "group": "niche_b2b",
+      "ok": true,
+      "error": null,
+      "run_id": 6,
+      "category": "product analytics and data platform for product engineering teams",
+      "category_ok": true,
+      "competitors": [
+        {
+          "name": "Amplitude",
+          "domain": "amplitude.com",
+          "label": "relevant"
+        },
+        {
+          "name": "Mixpanel",
+          "domain": "mixpanel.com",
+          "label": "relevant"
+        },
+        {
+          "name": "Heap",
+          "domain": "heap.io",
+          "label": "relevant"
+        },
+        {
+          "name": "Statsig",
+          "domain": "statsig.com",
+          "label": "relevant"
+        },
+        {
+          "name": "LogRocket",
+          "domain": "logrocket.com",
+          "label": "relevant"
+        }
+      ],
+      "strict_precision": 1.0,
+      "lenient_precision": 1.0,
+      "pricing": [],
+      "citation_coverage": 1.0,
+      "flag_count": 0,
+      "latency_s": 159.5,
+      "cost_cents": 36.8,
+      "tokens": 94712
+    },
+    {
+      "url": "retool.com",
+      "group": "niche_b2b",
+      "ok": true,
+      "error": null,
+      "run_id": 7,
+      "category": "low-code platform for building internal tools and AI applications",
+      "category_ok": true,
+      "competitors": [
+        {
+          "name": "Appsmith",
+          "domain": "appsmith.com",
+          "label": "relevant"
+        },
+        {
+          "name": "Mendix",
+          "domain": "mendix.com",
+          "label": "relevant"
+        },
+        {
+          "name": "Microsoft Power Apps",
+          "domain": "powerapps.microsoft.com",
+          "label": "defensible_unknown"
+        },
+        {
+          "name": "Superblocks",
+          "domain": "superblocks.com",
+          "label": "relevant"
+        },
+        {
+          "name": "ToolJet",
+          "domain": "tooljet.com",
+          "label": "relevant"
+        }
+      ],
+      "strict_precision": 0.8,
+      "lenient_precision": 1.0,
+      "pricing": [],
+      "citation_coverage": 1.0,
+      "flag_count": 0,
+      "latency_s": 160.9,
+      "cost_cents": 35.7,
+      "tokens": 86178
+    },
+    {
+      "url": "cursor.com",
+      "group": "recent",
+      "ok": true,
+      "error": null,
+      "run_id": 8,
+      "category": "AI coding assistant / agentic code editor for software developers",
+      "category_ok": true,
+      "competitors": [
+        {
+          "name": "GitHub Copilot",
+          "domain": "github.com",
+          "label": "relevant"
+        },
+        {
+          "name": "Amazon Q Developer",
+          "domain": "aws.amazon.com",
+          "label": "defensible_unknown"
+        },
+        {
+          "name": "Tabnine",
+          "domain": "tabnine.com",
+          "label": "relevant"
+        },
+        {
+          "name": "Sourcegraph Cody",
+          "domain": "sourcegraph.com",
+          "label": "relevant"
+        },
+        {
+          "name": "Zed",
+          "domain": "zed.dev",
+          "label": "relevant"
+        }
+      ],
+      "strict_precision": 0.8,
+      "lenient_precision": 1.0,
+      "pricing": [],
+      "citation_coverage": 1.0,
+      "flag_count": 0,
+      "latency_s": 140.1,
+      "cost_cents": 31.1,
+      "tokens": 78309
+    },
+    {
+      "url": "lovable.dev",
+      "group": "recent",
+      "ok": true,
+      "error": null,
+      "run_id": 9,
+      "category": "AI-powered no-code app builder platform",
+      "category_ok": true,
+      "competitors": [
+        {
+          "name": "Bolt",
+          "domain": "bolt.new",
+          "label": "relevant"
+        },
+        {
+          "name": "Replit",
+          "domain": "replit.com",
+          "label": "relevant"
+        },
+        {
+          "name": "v0 by Vercel",
+          "domain": "v0.dev",
+          "label": "relevant"
+        },
+        {
+          "name": "Bubble",
+          "domain": "bubble.io",
+          "label": "relevant"
+        },
+        {
+          "name": "Softr",
+          "domain": "softr.io",
+          "label": "defensible_unknown"
+        }
+      ],
+      "strict_precision": 0.8,
+      "lenient_precision": 1.0,
+      "pricing": [],
+      "citation_coverage": 1.0,
+      "flag_count": 1,
+      "latency_s": 135.4,
+      "cost_cents": 28.8,
+      "tokens": 65490
+    },
+    {
+      "url": "airtable.com",
+      "group": "ambiguous",
+      "ok": true,
+      "error": null,
+      "run_id": 10,
+      "category": "no-code app-building and workflow automation platform with AI agents for enterprises",
+      "category_ok": true,
+      "competitors": [
+        {
+          "name": "Monday.com",
+          "domain": "monday.com",
+          "label": "relevant"
+        },
+        {
+          "name": "ClickUp",
+          "domain": "clickup.com",
+          "label": "defensible_unknown"
+        },
+        {
+          "name": "Smartsheet",
+          "domain": "smartsheet.com",
+          "label": "relevant"
+        },
+        {
+          "name": "Coda",
+          "domain": "coda.io",
+          "label": "relevant"
+        },
+        {
+          "name": "Notion",
+          "domain": "notion.so",
+          "label": "relevant"
+        }
+      ],
+      "strict_precision": 0.8,
+      "lenient_precision": 1.0,
+      "pricing": [
+        {
+          "domain": "airtable.com",
+          "tier_contains": "Team",
+          "expected": 20.0,
+          "got": 20.0,
+          "status": "correct"
+        },
+        {
+          "domain": "airtable.com",
+          "tier_contains": "Business",
+          "expected": 45.0,
+          "got": 45.0,
+          "status": "correct"
+        },
+        {
+          "domain": "monday.com",
+          "tier_contains": "Basic",
+          "expected": 9.0,
+          "got": 9.0,
+          "status": "correct"
+        },
+        {
+          "domain": "monday.com",
+          "tier_contains": "Standard",
+          "expected": 12.0,
+          "got": 12.0,
+          "status": "correct"
+        }
+      ],
+      "citation_coverage": 1.0,
+      "flag_count": 0,
+      "latency_s": 145.1,
+      "cost_cents": 32.3,
+      "tokens": 78187
+    }
+  ]
+}
