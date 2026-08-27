@@ -1,0 +1,112 @@
+{
+  "version": "2026-08-27",
+  "notes": "Labels drafted by Claude on 2026-08-27; REVIEW BY RAVI'S TEAM PENDING. 'relevant' = clearly relevant competitor domains; 'irrelevant' = clearly irrelevant; anything else surfaced counts as defensible-unknown. pricing_truth contains only prices verified against live pages during development; extend after manual checks.",
+  "products": [
+    {
+      "url": "linear.app",
+      "group": "established",
+      "category_keywords": ["project management", "issue tracking", "product development"],
+      "relevant": ["atlassian.com", "asana.com", "monday.com", "clickup.com", "shortcut.com", "height.app", "plane.so", "zenhub.com", "github.com", "basecamp.com", "wrike.com", "pivotaltracker.com"],
+      "irrelevant": ["salesforce.com", "figma.com", "stripe.com", "dropbox.com"],
+      "pricing_truth": [
+        {"domain": "linear.app", "tier_contains": "Basic", "price_usd": 10},
+        {"domain": "linear.app", "tier_contains": "Business", "price_usd": 16},
+        {"domain": "shortcut.com", "tier_contains": "Team", "price_usd": 8.5},
+        {"domain": "shortcut.com", "tier_contains": "Business", "price_usd": 12},
+        {"domain": "plane.so", "tier_contains": "Pro", "price_usd": 6},
+        {"domain": "monday.com", "tier_contains": "Basic", "price_usd": 9},
+        {"domain": "monday.com", "tier_contains": "Standard", "price_usd": 12}
+      ]
+    },
+    {
+      "url": "slack.com",
+      "group": "established",
+      "category_keywords": ["messaging", "team communication", "collaboration"],
+      "relevant": ["microsoft.com", "mattermost.com", "rocket.chat", "discord.com", "twist.com", "chanty.com", "flock.com", "element.io", "zulip.com", "zulipchat.com"],
+      "irrelevant": ["adobe.com", "salesforce.com", "shopify.com", "github.com"],
+      "pricing_truth": [
+        {"domain": "twist.com", "tier_contains": "Unlimited", "price_usd": 6}
+      ]
+    },
+    {
+      "url": "notion.com",
+      "group": "established",
+      "category_keywords": ["workspace", "knowledge management", "docs", "collaboration", "productivity"],
+      "relevant": ["coda.io", "airtable.com", "clickup.com", "atlassian.com", "evernote.com", "obsidian.md", "anytype.io", "affine.pro", "appflowy.io", "slite.com", "monday.com", "asana.com", "microsoft.com"],
+      "irrelevant": ["stripe.com", "zoom.us", "salesforce.com", "shopify.com"],
+      "pricing_truth": [
+        {"domain": "airtable.com", "tier_contains": "Team", "price_usd": 20},
+        {"domain": "airtable.com", "tier_contains": "Business", "price_usd": 45},
+        {"domain": "asana.com", "tier_contains": "Starter", "price_usd": 10.99},
+        {"domain": "asana.com", "tier_contains": "Advanced", "price_usd": 24.99}
+      ]
+    },
+    {
+      "url": "figma.com",
+      "group": "established",
+      "category_keywords": ["design", "prototyping", "ui", "interface", "product design"],
+      "relevant": ["sketch.com", "adobe.com", "penpot.app", "framer.com", "canva.com", "axure.com", "uxpin.com", "marvelapp.com"],
+      "irrelevant": ["github.com", "slack.com", "salesforce.com", "atlassian.com"],
+      "pricing_truth": []
+    },
+    {
+      "url": "tailscale.com",
+      "group": "niche_b2b",
+      "category_keywords": ["vpn", "zero trust", "network", "connectivity", "remote access"],
+      "relevant": ["twingate.com", "zerotier.com", "netbird.io", "netmaker.io", "openvpn.net", "cloudflare.com", "zscaler.com", "perimeter81.com", "goteleport.com", "paloaltonetworks.com", "checkpoint.com", "nordlayer.com", "headscale.net"],
+      "irrelevant": ["slack.com", "figma.com", "stripe.com", "notion.com"],
+      "pricing_truth": [
+        {"domain": "tailscale.com", "tier_contains": "Standard", "price_usd": 8},
+        {"domain": "tailscale.com", "tier_contains": "Premium", "price_usd": 18},
+        {"domain": "twingate.com", "tier_contains": "Teams", "price_usd": 5},
+        {"domain": "twingate.com", "tier_contains": "Business", "price_usd": 10},
+        {"domain": "zerotier.com", "tier_contains": "Professional", "price_usd": 2.0}
+      ]
+    },
+    {
+      "url": "posthog.com",
+      "group": "niche_b2b",
+      "category_keywords": ["product analytics", "analytics", "feature flags", "session replay"],
+      "relevant": ["amplitude.com", "mixpanel.com", "heap.io", "fullstory.com", "hotjar.com", "logrocket.com", "pendo.io", "statsig.com", "matomo.org", "plausible.io", "smartlook.com", "contentsquare.com", "june.so"],
+      "irrelevant": ["slack.com", "stripe.com", "figma.com", "notion.com"],
+      "pricing_truth": []
+    },
+    {
+      "url": "retool.com",
+      "group": "niche_b2b",
+      "category_keywords": ["internal tools", "low-code", "app builder", "app development"],
+      "relevant": ["appsmith.com", "tooljet.com", "budibase.com", "superblocks.com", "glideapps.com", "windmill.dev", "mendix.com", "outsystems.com", "softr.io", "bubble.io"],
+      "irrelevant": ["slack.com", "figma.com", "stripe.com", "github.com"],
+      "pricing_truth": []
+    },
+    {
+      "url": "cursor.com",
+      "group": "recent",
+      "category_keywords": ["ai", "code editor", "coding", "developer"],
+      "relevant": ["github.com", "codeium.com", "windsurf.com", "tabnine.com", "sourcegraph.com", "replit.com", "zed.dev", "jetbrains.com", "augmentcode.com", "continue.dev", "cognition.ai", "anthropic.com", "claude.com"],
+      "irrelevant": ["figma.com", "stripe.com", "notion.com", "slack.com"],
+      "pricing_truth": []
+    },
+    {
+      "url": "lovable.dev",
+      "group": "recent",
+      "category_keywords": ["ai", "app builder", "website builder", "no-code", "code generation"],
+      "relevant": ["bolt.new", "v0.dev", "vercel.com", "replit.com", "bubble.io", "webflow.com", "base44.com", "create.xyz"],
+      "irrelevant": ["stripe.com", "slack.com", "salesforce.com", "notion.com"],
+      "pricing_truth": []
+    },
+    {
+      "url": "airtable.com",
+      "group": "ambiguous",
+      "category_keywords": ["database", "spreadsheet", "no-code", "app platform", "workflow"],
+      "relevant": ["smartsheet.com", "monday.com", "notion.com", "notion.so", "coda.io", "baserow.io", "nocodb.com", "knack.com", "quickbase.com", "stackby.com", "rows.com", "glideapps.com"],
+      "irrelevant": ["slack.com", "figma.com", "stripe.com", "zoom.us"],
+      "pricing_truth": [
+        {"domain": "airtable.com", "tier_contains": "Team", "price_usd": 20},
+        {"domain": "airtable.com", "tier_contains": "Business", "price_usd": 45},
+        {"domain": "monday.com", "tier_contains": "Basic", "price_usd": 9},
+        {"domain": "monday.com", "tier_contains": "Standard", "price_usd": 12}
+      ]
+    }
+  ]
+}
