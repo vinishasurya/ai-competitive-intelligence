@@ -26,5 +26,11 @@ Entry template:
 **Problems:** None significant. `chromium-cli` wasn't available for screenshots; used `npx playwright screenshot` instead.
 **Next:** CP1 — SQLite schema for all 7 tables (products, runs, competitors, sources, findings, claims, eval_results) + matching Pydantic models + insert/read round-trip test.
 
+## 2026-08-27 — CP1 complete: data model & schemas
+**Done:** `backend/app/schema.sql` with all 7 tables from design doc §12 (products, runs, competitors, sources, findings, claims, eval_results), FK constraints, CHECK constraints on status/section/claim_type/source_type enums, and per-run indexes. `backend/app/models.py` with Pydantic models mirroring each table via a `RowModel` base that handles JSON-column serialization. `backend/app/db.py` with connect/init/insert/fetch helpers (FK pragma on, table-name allowlist). **Evidence:** 3 pytest tests pass — full 7-table round-trip with realistic Linear/Jira sample data, FK rejection of an orphaned run, and DB-level rejection of an invalid status that bypasses Pydantic. Commit `2247969`.
+**Decisions:** (1) Stdlib `sqlite3` + raw schema.sql over SQLAlchemy — fewer moving parts, transparent SQL; kept the DDL Postgres-portable (ISO-string timestamps set in Python, no SQLite-only features) to preserve the migration path. (2) Validation at two layers: Pydantic Literals at the app boundary AND SQL CHECK constraints — defense in depth for the data the whole eval story depends on. (3) `sources.competitor_id` / `findings.competitor_id` nullable = row is about the original product, not a competitor.
+**Problems:** pytest couldn't import `app` from tests/ — fixed with `pythonpath = ["."]` in pyproject.
+**Next:** CP2 — `search_web` + `crawl_page` tools; first decide the search API provider (Brave / Tavily / Serper) against the $1.20/report budget.
+
 ## V2 ideas (parking lot — out of V1 scope)
 - (log future feature ideas here instead of building them)
