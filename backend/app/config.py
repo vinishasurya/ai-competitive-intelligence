@@ -6,7 +6,9 @@ from pathlib import Path
 from dotenv import load_dotenv
 
 BACKEND_DIR = Path(__file__).resolve().parents[1]
-load_dotenv(BACKEND_DIR / ".env")
+# override=True: the project .env is the source of truth, beating any stale
+# shell-profile exports of the same variable names.
+load_dotenv(BACKEND_DIR / ".env", override=True)
 
 SEARCH_API_KEY = os.getenv("SEARCH_API_KEY", "").strip()
 ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY", "").strip()
