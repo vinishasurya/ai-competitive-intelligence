@@ -11,10 +11,11 @@ import re
 from typing import Literal
 from urllib.parse import urlparse
 
-import anthropic
 from pydantic import BaseModel, Field
 
 from app import config
+from app.llm import Usage as _Usage
+from app.llm import parse as _parse
 from app.profiler import ProductProfile
 from app.tools.crawl import crawl_page
 from app.tools.search import search_web
@@ -93,39 +94,6 @@ def normalize_name(raw: str) -> str:
     name = re.sub(r"[^a-z0-9 ]", "", name)
     name = re.sub(r"\b(inc|llc|ltd|corp|app|software|hq)\b", "", name).strip()
     return re.sub(r"\s+", " ", name)
-
-
-class _Usage:
-    """Accumulates token usage and cost across all model calls in one run."""
-
-    def __init__(self):
-        self.input_tokens = 0
-        self.output_tokens = 0
-        self.cost_cents = 0.0
-
-    def add(self, model: str, usage) -> None:
-        self.input_tokens += usage.input_tokens
-        self.output_tokens += usage.output_tokens
-        self.cost_cents += config.estimate_cost_cents(
-            model, usage.input_tokens, usage.output_tokens
-        )
-
-
-def _parse(model: str, system: str, user: str, output_format, usage: _Usage):
-    client = anthropic.Anthropic(api_key=config.ANTHROPIC_API_KEY)
-    kwargs = {}
-    if model == config.MODEL_PROFILER:
-        kwargs["thinking"] = {"type": "adaptive"}
-    response = client.messages.parse(
-        model=model,
-        max_tokens=8000,
-        system=system,
-        messages=[{"role": "user", "content": user}],
-        output_format=output_format,
-        **kwargs,
-    )
-    usage.add(model, response.usage)
-    return response.parsed_output
 
 
 # ---------- strategy 1: model-generated leads ----------
