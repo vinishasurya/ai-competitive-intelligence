@@ -17,6 +17,9 @@ out/
 next-env.d.ts
 *.tsbuildinfo
 
+# Page cache
+.cache/
+
 # Database
 *.db
 *.sqlite3
