@@ -1,8 +1,8 @@
 # Status — AI Competitive Intelligence Platform (V1)
 
 **Last updated:** 2026-08-27
-**Current checkpoint:** CP3 — Product profiler (code complete, blocked on live verification)
-**Overall:** 3 / 11 checkpoints complete
+**Current checkpoint:** CP4 — Competitor discovery, verification, ranking (not started)
+**Overall:** 4 / 11 checkpoints complete
 
 ## Checkpoint board
 | # | Checkpoint | Status |
@@ -10,7 +10,7 @@
 | CP0 | Project scaffold | ✅ Done (2026-08-27, commit 6eb494e) |
 | CP1 | Data model & schemas | ✅ Done (2026-08-27, commit 2247969) |
 | CP2 | Research tools (search_web, crawl_page) | ✅ Done (2026-08-27, commit 33fb035) |
-| CP3 | Product profiler | 🟡 Code + 16 tests done; live smoke blocked on API key |
+| CP3 | Product profiler | ✅ Done (2026-08-27, commit 303100f) |
 | CP4 | Competitor discovery, verification, ranking | ⬜ Not started |
 | CP5 | Evidence collection & structured extraction | ⬜ Not started |
 | CP6 | Report generation & validation | ⬜ Not started |
@@ -20,10 +20,10 @@
 | CP10 | Deploy & portfolio polish | ⬜ Not started |
 
 ## Right now
-Data layer + research tools working: 7-table SQLite schema with tested round-trips, `search_web` (Tavily, key in `backend/.env`) and `crawl_page` (trafilatura extraction, content hashes, 24h disk cache, soft failures) verified live against real pricing pages. 9 passing tests (`cd backend && uv run pytest`); live check: `uv run python scripts/smoke_cp2.py`.
+Pipeline through profiling works live: schema + research tools + product profiler (`build_profile(url)` → grounded structured profile via Opus 4.8, ~3.8¢/product). 25 passing tests (`cd backend && uv run pytest`); live checks: `scripts/smoke_cp2.py`, `scripts/smoke_cp3.py`. Both API keys working in `backend/.env`.
 
 ## Next step
-Paste a real Anthropic API key into `backend/.env`, then run `cd backend && uv run python scripts/smoke_cp3.py` to close CP3.
+CP4: competitor discovery — model-generated leads + search queries ("alternatives to X") + comparison pages → dedupe by name/domain → verify each candidate's site addresses the same category → rank → top 5 with "why selected". Highest-risk checkpoint; test on 3 products.
 
 ## Blockers / open questions
-- **The `ANTHROPIC_API_KEY` in `backend/.env` is a placeholder (19 chars, `sk-ant-xx...`).** A real key is ~108 chars starting `sk-ant-api03-` — create one at console.anthropic.com → API keys. Live smoke returned 401 until this is fixed.
+- Housekeeping for the user: delete the stale `export ANTHROPIC_API_KEY=sk-ant-xxx...` placeholder from `~/.zshrc` (the code now overrides it, but it can confuse other tools).

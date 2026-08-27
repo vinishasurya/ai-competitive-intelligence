@@ -38,5 +38,11 @@ Entry template:
 **Problems:** Scripts couldn't import `app` (pytest-only pythonpath fix) — solved properly by packaging the backend.
 **Next:** CP3 — product profiler (URL validation → crawl homepage/pricing/features/about → structured profile via Claude structured output). Needs `ANTHROPIC_API_KEY` in `backend/.env`.
 
+## 2026-08-27 — CP3 complete: product profiler
+**Done:** `app/profiler.py`: URL validation (normalizes bare domains, rejects localhost/private IPs), page collection across homepage + /pricing /features /about /product with content-hash dedupe (sites redirect unknown paths to the homepage), and structured profile extraction via `client.messages.parse()` with a Pydantic `ProductProfile` schema — Opus 4.8, adaptive thinking, grounding prompt (page text only, null over guessing). Cost estimation per call wired into config. 16 offline tests (25 total passing). **Evidence:** live smoke on linear.app / slack.com / notion.com produced accurate profiles verified by eye; Linear's pricing tiers ($0/$10/$16) match its live page; Slack's summary correctly says "specific prices not listed" instead of inventing numbers — the grounding rule working. Cost: 11.49¢ total (~3.8¢/product). Commits `9d3d648`, `303100f`.
+**Decisions:** (1) `messages.parse()` + Pydantic over ask-for-JSON — API-validated structure, no parsing failures. (2) Opus 4.8 for profiling per design doc's "larger model" tier; Haiku 4.5 preconfigured for CP5 extraction. (3) `load_dotenv(override=True)` so the project `.env` beats stale shell exports.
+**Problems:** Two rounds of 401s. First: the key in `.env` was a placeholder. Second: after the real key was added, a stale `ANTHROPIC_API_KEY=sk-ant-xxx...` export in the user's shell profile shadowed it (dotenv doesn't override existing env vars by default) — fixed with `override=True`. User should also delete that export from `~/.zshrc`.
+**Next:** CP4 — competitor discovery (3 strategies), dedupe, verification, ranking. The highest-risk checkpoint.
+
 ## V2 ideas (parking lot — out of V1 scope)
 - (log future feature ideas here instead of building them)
