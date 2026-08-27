@@ -32,5 +32,11 @@ Entry template:
 **Problems:** pytest couldn't import `app` from tests/ — fixed with `pythonpath = ["."]` in pyproject.
 **Next:** CP2 — `search_web` + `crawl_page` tools; first decide the search API provider (Brave / Tavily / Serper) against the $1.20/report budget.
 
+## 2026-08-27 — CP2 complete: research tools
+**Done:** `app/tools/search.py` (`search_web` via Tavily REST) and `app/tools/crawl.py` (`crawl_page` with trafilatura text extraction, retrieval metadata, sha256 content hash, 24h on-disk page cache). Both follow a soft-failure contract: never raise, return `ok=False` + error + whatever metadata was collected. `app/config.py` loads `.env`. 6 offline unit tests (httpx monkeypatched) + `scripts/smoke_cp2.py` live smoke. **Evidence:** 9/9 tests pass; live smoke run: Tavily returned 5 real "Linear alternatives" results; linear.app/slack.com/notion.com pricing pages crawled to clean text (2k–11k chars) and round-tripped through the sources table; dead domain soft-failed with a recorded ConnectError; recrawl served from cache. Commit `33fb035`.
+**Decisions:** (1) Tavily via direct REST + httpx instead of their SDK — one fewer dependency, transparent request shape. (2) trafilatura for HTML→text — purpose-built main-content extraction beats hand-rolled tag stripping, `favor_recall=True` since pricing tables matter more than noise reduction. (3) Soft-failure contract on both tools so one bad page/query can't kill a run (design doc §15). (4) Backend made an installable package (hatchling) so `import app` works in scripts, tests, and the server alike. (5) JS-heavy pages that yield no static text are reported as unavailable — accepted V1 limitation per design doc.
+**Problems:** Scripts couldn't import `app` (pytest-only pythonpath fix) — solved properly by packaging the backend.
+**Next:** CP3 — product profiler (URL validation → crawl homepage/pricing/features/about → structured profile via Claude structured output). Needs `ANTHROPIC_API_KEY` in `backend/.env`.
+
 ## V2 ideas (parking lot — out of V1 scope)
 - (log future feature ideas here instead of building them)
