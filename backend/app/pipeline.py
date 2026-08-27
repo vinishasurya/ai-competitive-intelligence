@@ -46,11 +46,15 @@ def _finish_run(conn, run_id, status, cost_cents, tokens, tool_calls, error=None
     conn.commit()
 
 
-def run_pipeline(conn: sqlite3.Connection, raw_url: str) -> PipelineResult:
+def run_pipeline(
+    conn: sqlite3.Connection, raw_url: str, on_progress=None
+) -> PipelineResult:
     started = time.monotonic()
     result = PipelineResult(ok=False, url=raw_url)
+    progress = on_progress or (lambda stage, detail: None)
 
     # Stage 1: profile
+    progress("profiling", f"reading {raw_url} and building a product profile")
     prof = build_profile(raw_url)
     result.cost_cents += prof.cost_cents
     result.total_tokens += prof.input_tokens + prof.output_tokens
@@ -69,6 +73,7 @@ def run_pipeline(conn: sqlite3.Connection, raw_url: str) -> PipelineResult:
     result.run_id = run_id
 
     # Stage 2: discovery
+    progress("discovery", f"finding and verifying competitors of {profile.name}")
     disc = discover_competitors(profile)
     result.cost_cents += disc.cost_cents
     result.total_tokens += disc.input_tokens + disc.output_tokens
@@ -96,7 +101,8 @@ def run_pipeline(conn: sqlite3.Connection, raw_url: str) -> PipelineResult:
 
     # Stage 3: evidence
     usage = Usage()
-    for comp_id, name, domain in companies:
+    for i, (comp_id, name, domain) in enumerate(companies, 1):
+        progress("evidence", f"researching {name} ({i}/{len(companies)})")
         summary = collect_and_extract(conn, run_id, comp_id, name, domain, usage)
         result.evidence.append(summary)
         result.tool_calls += summary.pages_ok + summary.pages_failed
@@ -104,7 +110,7 @@ def run_pipeline(conn: sqlite3.Connection, raw_url: str) -> PipelineResult:
     result.total_tokens += usage.input_tokens + usage.output_tokens
 
     # Stage 4: report + validation
-    report = generate_report(conn, run_id)
+    report = generate_report(conn, run_id, on_progress=progress)
     result.report = report
     result.cost_cents += report.cost_cents
     result.total_tokens += report.input_tokens + report.output_tokens

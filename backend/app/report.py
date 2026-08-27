@@ -187,12 +187,16 @@ def generate_section(section: str, bundle: dict, usage: Usage) -> SectionClaims:
     )
 
 
-def generate_report(conn: sqlite3.Connection, run_id: int) -> ReportResult:
+def generate_report(
+    conn: sqlite3.Connection, run_id: int, on_progress=None
+) -> ReportResult:
     usage = Usage()
+    progress = on_progress or (lambda stage, detail: None)
     bundle = load_bundle(conn, run_id)
     sections: dict[str, list[StoredClaim]] = {}
     try:
         for section in SECTIONS:
+            progress("report", f"writing {section.replace('_', ' ')}")
             result = generate_section(section, bundle, usage)
             stored = []
             for claim in result.claims:
@@ -226,6 +230,69 @@ def generate_report(conn: sqlite3.Connection, run_id: int) -> ReportResult:
         input_tokens=usage.input_tokens, output_tokens=usage.output_tokens,
         cost_cents=usage.cost_cents,
     )
+
+
+# ---------- report payload for the UI / shareable link ----------
+
+def report_payload(conn: sqlite3.Connection, run_id: int) -> dict | None:
+    """Everything the report page needs, assembled from stored rows."""
+    run = fetch_row(conn, "runs", run_id)
+    if run is None:
+        return None
+    product = fetch_row(conn, "products", run["product_id"])
+
+    sections: dict[str, list[dict]] = {s: [] for s in SECTIONS}
+    factual = sourced = 0
+    for row in conn.execute(
+        "SELECT * FROM claims WHERE run_id = ? ORDER BY id", (run_id,)
+    ).fetchall():
+        source_ids = json.loads(row["source_ids_json"])
+        if row["claim_type"] != "interpretation":
+            factual += 1
+            sourced += bool(source_ids)
+        sections.setdefault(row["section"], []).append({
+            "id": row["id"], "text": row["text"], "claim_type": row["claim_type"],
+            "source_ids": source_ids, "confidence": row["confidence"],
+        })
+
+    competitors = [
+        {
+            "id": r["id"], "name": r["name"], "domain": r["domain"],
+            "relationship": r["relationship"], "confidence": r["confidence"],
+            "discovery_methods": json.loads(r["discovery_methods_json"]),
+        }
+        for r in conn.execute(
+            "SELECT * FROM competitors WHERE run_id = ? AND verified = 1", (run_id,)
+        ).fetchall()
+    ]
+    sources = {
+        str(r["id"]): {
+            "url": r["url"], "source_type": r["source_type"],
+            "fetched_at": r["fetched_at"], "ok": r["http_status"] == 200,
+        }
+        for r in conn.execute(
+            "SELECT id, url, source_type, fetched_at, http_status FROM sources "
+            "WHERE run_id = ?", (run_id,),
+        ).fetchall()
+    }
+
+    return {
+        "run": {
+            "id": run["id"], "status": run["status"], "error": run["error"],
+            "started_at": run["started_at"], "finished_at": run["finished_at"],
+            "cost_cents": run["cost_cents"], "token_count": run["token_count"],
+            "tool_calls": run["tool_calls"],
+        },
+        "product": {
+            "name": product["name"], "domain": product["domain"],
+            "url": product["url"], "category": product["category"],
+        },
+        "competitors": competitors,
+        "sections": sections,
+        "sources": sources,
+        "flags": [f.model_dump() for f in validate_run(conn, run_id)],
+        "citation_coverage": (sourced / factual) if factual else None,
+    }
 
 
 # ---------- deterministic validation (design doc §10 step 7) ----------

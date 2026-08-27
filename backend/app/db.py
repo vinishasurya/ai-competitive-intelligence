@@ -27,6 +27,8 @@ def connect(db_path: str | Path = DEFAULT_DB_PATH) -> sqlite3.Connection:
     conn.row_factory = sqlite3.Row
     # SQLite does not enforce foreign keys unless asked, per-connection.
     conn.execute("PRAGMA foreign_keys = ON")
+    # WAL lets the API serve reads while a pipeline thread is writing.
+    conn.execute("PRAGMA journal_mode = WAL")
     return conn
 
 
