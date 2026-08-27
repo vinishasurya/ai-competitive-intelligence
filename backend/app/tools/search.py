@@ -28,14 +28,19 @@ class SearchResponse(BaseModel):
     error: str | None = None
 
 
-def search_web(query: str, max_results: int = 8) -> SearchResponse:
+def search_web(
+    query: str, max_results: int = 8, include_domains: list[str] | None = None
+) -> SearchResponse:
     if not config.SEARCH_API_KEY:
         return SearchResponse(ok=False, query=query, error="SEARCH_API_KEY is not set")
+    payload = {"query": query, "max_results": max_results, "search_depth": "basic"}
+    if include_domains:
+        payload["include_domains"] = include_domains
     try:
         resp = httpx.post(
             TAVILY_ENDPOINT,
             headers={"Authorization": f"Bearer {config.SEARCH_API_KEY}"},
-            json={"query": query, "max_results": max_results, "search_depth": "basic"},
+            json=payload,
             timeout=30.0,
         )
         resp.raise_for_status()
