@@ -12,16 +12,20 @@ Pricing is extracted only from pricing pages; when none is available the
 pricing finding says so explicitly instead of guessing (design doc §14).
 """
 
+import re
 import sqlite3
 from typing import Literal
+from urllib.parse import urljoin, urlparse
 
+import httpx
 from pydantic import BaseModel, Field
 
 from app import config
 from app.db import insert_row
 from app.llm import Usage, parse
 from app.models import Finding, Source
-from app.tools.crawl import CrawlResult, crawl_page
+from app.tools.crawl import CrawlResult, crawl_page, crawl_page_rendered
+from app.tools.search import search_web
 
 PAGE_PLAN: list[tuple[str, str]] = [  # (source_type, path)
     ("homepage", ""),
@@ -63,10 +67,62 @@ class EvidenceSummary(BaseModel):
     error: str | None = None
 
 
+# ---------- pricing-page discovery (CP9 fix, part 1) ----------
+
+def find_pricing_link(domain: str, company_name: str | None = None) -> str | None:
+    """Find the pricing page's real URL when it isn't at /pricing.
+
+    Two strategies: links on the homepage (static HTML), then a domain-
+    restricted web search (handles JS-only homepages and deep paths like
+    atlassian.com/software/jira/pricing).
+    """
+    base = f"https://{domain}"
+    try:
+        resp = httpx.get(base, follow_redirects=True, timeout=20.0,
+                         headers={"User-Agent": "ci-research-bot/0.1"})
+    except Exception:
+        resp = None
+    if resp is not None and resp.status_code < 400:
+        hrefs = re.findall(r"""href=["']([^"'#?]+)""", resp.text)
+        candidates = []
+        for href in hrefs:
+            if not re.search(r"pricing|plans\b", href, re.I):
+                continue
+            absolute = urljoin(str(resp.url), href)
+            host = (urlparse(absolute).hostname or "").removeprefix("www.")
+            if not host.endswith(domain.removeprefix("www.")):
+                continue  # off-site link
+            candidates.append(absolute)
+        if candidates:
+            # Prefer explicit "pricing" over "plans"; then shortest (canonical).
+            candidates.sort(key=lambda u: ("pricing" not in u.lower(), len(u)))
+            return candidates[0]
+
+    # Search fallback, restricted to the company's own domain.
+    search = search_web(f"{company_name or domain} pricing", max_results=5,
+                        include_domains=[domain])
+    if search.ok:
+        hits = [r.url for r in search.results
+                if re.search(r"pricing|plans\b", r.url, re.I)]
+        if hits:
+            # Multi-product companies (e.g. Atlassian) have several pricing
+            # pages; prefer URLs naming this product to avoid attributing a
+            # sibling product's prices. Then prefer "pricing" over "plans".
+            slug = re.sub(r"[^a-z0-9]", "", (company_name or "").lower())
+            hits.sort(key=lambda u: (
+                slug not in re.sub(r"[^a-z0-9]", "", u.lower()) if slug else False,
+                "pricing" not in u.lower(),
+                len(u),
+            ))
+            return hits[0]
+    return None
+
+
 # ---------- step 4: collect and store sources ----------
 
 def collect_sources(
-    conn: sqlite3.Connection, run_id: int, competitor_id: int | None, domain: str
+    conn: sqlite3.Connection, run_id: int, competitor_id: int | None, domain: str,
+    company_name: str | None = None,
 ) -> list[tuple[int, str, CrawlResult]]:
     """Crawl the page plan for one company; store every attempt as a source row.
 
@@ -75,14 +131,13 @@ def collect_sources(
     """
     stored: list[tuple[int, str, CrawlResult]] = []
     seen_hashes: set[str] = set()
-    for source_type, path in PAGE_PLAN:
-        url = f"https://{domain}{path}"
-        result = crawl_page(url)
+
+    def store(source_type: str, result: CrawlResult) -> None:
         if result.ok and result.content_hash in seen_hashes:
-            continue
+            return
         if result.ok:
             seen_hashes.add(result.content_hash)
-        source = Source(
+        source_id = insert_row(conn, "sources", Source(
             run_id=run_id,
             competitor_id=competitor_id,
             url=result.final_url or result.url,
@@ -91,9 +146,20 @@ def collect_sources(
             raw_text=result.raw_text,
             http_status=result.http_status,
             content_hash=result.content_hash,
-        )
-        source_id = insert_row(conn, "sources", source.to_row())
+        ).to_row())
         stored.append((source_id, source_type, result))
+
+    for source_type, path in PAGE_PLAN:
+        store(source_type, crawl_page(f"https://{domain}{path}"))
+
+    # CP9 fix: /pricing failed -> discover the real pricing URL from the
+    # homepage's links (non-standard paths like /software/jira/pricing).
+    pricing_attempts = [r for _, stype, r in stored if stype == "pricing"]
+    if pricing_attempts and not any(r.ok for r in pricing_attempts):
+        link = find_pricing_link(domain, company_name)
+        if link and link not in {r.url for r in pricing_attempts}:
+            store("pricing", crawl_page(link))
+
     return stored
 
 
@@ -176,17 +242,45 @@ def extract_findings(
     # Pricing strictly from pricing pages (primary source rule).
     pricing_sources = [(sid, r) for sid, stype, r in sources if stype == "pricing"]
     pricing_ok = [(sid, r) for sid, r in pricing_sources if r.ok]
+
+    pricing = None
+    cited: list[int] = []
     if pricing_ok:
         sid, result = pricing_ok[0]
         pricing = extract_pricing(result.raw_text or "", usage)
-        store("pricing", pricing.model_dump(), [sid])
+        cited = [sid]
+
+    # CP9 fix: static text had no usable pricing (JS-rendered pages) ->
+    # re-fetch with headless Chromium and store the rendered page as its
+    # own source so the finding cites what was actually read.
+    if pricing is None or not pricing.available:
+        target = pricing_ok[0][1] if pricing_ok else (
+            pricing_sources[0][1] if pricing_sources else None
+        )
+        if target is not None:
+            rendered = crawl_page_rendered(target.final_url or target.url)
+            if rendered.ok:
+                rendered_pricing = extract_pricing(rendered.raw_text or "", usage)
+                if rendered_pricing.available:
+                    rendered_sid = insert_row(conn, "sources", Source(
+                        run_id=run_id, competitor_id=competitor_id,
+                        url=rendered.final_url or rendered.url,
+                        source_type="pricing", fetched_at=rendered.fetched_at,
+                        raw_text=rendered.raw_text,
+                        http_status=rendered.http_status,
+                        content_hash=rendered.content_hash,
+                    ).to_row())
+                    pricing, cited = rendered_pricing, [rendered_sid]
+
+    if pricing is not None and pricing.available:
+        store("pricing", pricing.model_dump(), cited)
     else:
         attempted = [sid for sid, _ in pricing_sources]
         store("pricing", {
             "available": False,
             "tiers": [],
-            "notes": "no accessible pricing page found",
-        }, attempted)
+            "notes": "no accessible pricing found (static and rendered fetches)",
+        }, attempted or cited)
 
     return finding_ids
 
@@ -202,7 +296,7 @@ def collect_and_extract(
     """Full evidence pass for one company. Soft-fails per company."""
     summary = EvidenceSummary(company=company_name, domain=domain)
     try:
-        sources = collect_sources(conn, run_id, competitor_id, domain)
+        sources = collect_sources(conn, run_id, competitor_id, domain, company_name)
         summary.source_ids = [sid for sid, _, _ in sources]
         summary.pages_ok = sum(1 for _, _, r in sources if r.ok)
         summary.pages_failed = sum(1 for _, _, r in sources if not r.ok)

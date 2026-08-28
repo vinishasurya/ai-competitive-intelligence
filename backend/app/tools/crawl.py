@@ -60,6 +60,57 @@ def _cache_put(url: str, result: CrawlResult) -> None:
     _cache_path(url).write_text(result.model_dump_json())
 
 
+def crawl_page_rendered(url: str, timeout: float = 30.0, use_cache: bool = True) -> CrawlResult:
+    """Fetch a URL with headless Chromium so JS-rendered content is visible.
+
+    Slow (~2-5s) — used only as a fallback when the static crawl of a page
+    yields no usable content (e.g. JS-rendered pricing pages). Same soft-
+    failure contract and cache as crawl_page, under a distinct cache key.
+    """
+    cache_key = f"rendered:{url}"
+    if use_cache and (cached := _cache_get(cache_key)):
+        return cached
+
+    fetched_at = _utcnow()
+    try:
+        from playwright.sync_api import sync_playwright
+
+        with sync_playwright() as p:
+            browser = p.chromium.launch()
+            page = browser.new_page(user_agent=USER_AGENT)
+            response = page.goto(url, wait_until="domcontentloaded",
+                                 timeout=timeout * 1000)
+            page.wait_for_timeout(6000)  # let client-side rendering settle
+            # Visible text, not HTML extraction: trafilatura drops rendered
+            # price elements, but what the browser displays is what we want.
+            text = page.inner_text("body")
+            html = page.content()
+            status = response.status if response else None
+            final_url = page.url
+            browser.close()
+    except Exception as exc:
+        return CrawlResult(
+            ok=False, url=url, fetched_at=fetched_at,
+            error=f"render: {type(exc).__name__}: {exc}",
+        )
+
+    if not text or len(text.strip()) < 100:  # near-empty body -> try HTML extraction
+        text = trafilatura.extract(html, include_tables=True, favor_recall=True)
+    if not text:
+        return CrawlResult(
+            ok=False, url=url, final_url=final_url, http_status=status,
+            fetched_at=fetched_at, error="render: no extractable text",
+        )
+    result = CrawlResult(
+        ok=True, url=url, final_url=final_url, http_status=status,
+        raw_text=text, content_hash=hashlib.sha256(text.encode()).hexdigest(),
+        fetched_at=fetched_at,
+    )
+    if use_cache:
+        _cache_put(cache_key, result)
+    return result
+
+
 def crawl_page(url: str, timeout: float = 20.0, use_cache: bool = True) -> CrawlResult:
     if use_cache and (cached := _cache_get(url)):
         return cached
