@@ -36,7 +36,8 @@ app = FastAPI(title="AI Competitive Intelligence API", version="0.2.0",
 # cross-origin requests unless the API explicitly allows them.
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[os.getenv("FRONTEND_ORIGIN", "http://localhost:3000")],
+    # Origins never carry a trailing slash; strip one in case the env var does.
+    allow_origins=[os.getenv("FRONTEND_ORIGIN", "http://localhost:3000").rstrip("/")],
     allow_methods=["*"],
     allow_headers=["*"],
 )
