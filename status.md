@@ -22,10 +22,11 @@
 ## Right now
 **v1 benchmark published** (`eval/results/v1.md`): 10/10 products, category accuracy 100%, competitor precision 84% strict / 100% lenient, pricing 16/16 labeled tiers, citation coverage 100%, 1 flag, mean 142s / 34¢ per report — all design-doc targets exceeded. 66 passing tests. Product runs in browser at localhost:3000.
 
-## Next step — TWO HUMAN TASKS, then CP9
-1. **Manual review** (`eval/results/v1_manual_review.md`): open each sampled claim's citations, mark valid/invalid/hallucination → produces the citation-validity + hallucination-rate numbers.
-2. **Label audit** (`eval/benchmark.json`): labels were Claude-drafted; the 8 strict-precision misses look like label gaps (Google Chat, Power Apps, Amazon Q, ClickUp-for-Airtable…) — approve or amend, then metrics can be re-scored from the stored v1.db without re-running pipelines.
-Then CP9: fix highest-impact failure mode (leading candidate: pricing pages at non-standard paths, e.g. Jira) → re-run as v2 → before/after resume bullet.
+## Manual review done (2026-08-27)
+30 claims reviewed by hand: **citation validity 86.7%, hallucination rate 0%**. All 4 invalids are pricing claims; 3 are JS-rendered pricing pages (Slack, Notion, Lovable). Still open: benchmark label audit (`eval/benchmark.json`) — optional before v2 re-score; and the reason for the Linear pricing invalid mark (ask Ravi's team).
+
+## Next step
+CP9: fix the confirmed highest-impact failure mode — **pricing-page retrieval** (JS-rendered pages + non-standard paths like Jira's). Candidate fixes: headless-browser rendering fallback for pricing pages, and/or pricing-URL discovery from homepage links/search. Then re-run benchmark as v2 for the before/after bullet.
 
 ## Known failure modes (CP9 candidates)
 - Pricing at non-standard paths missed (Jira's is at /software/jira/pricing, not /pricing) → shows "unavailable" despite public pricing. Fix idea: discover pricing URLs from homepage links or search.

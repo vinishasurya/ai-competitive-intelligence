@@ -73,5 +73,10 @@ Entry template:
 **Caveats (be honest on the resume):** (1) Labels are Claude-drafted and un-reviewed — precision numbers move once the user audits them. (2) Pricing ground truth is only 16 tiers, all prices we ourselves verified during development — small and selection-biased sample; extend labels for v2. (3) Citation validity + hallucination rate REQUIRE the human pass: `eval/results/v1_manual_review.md`.
 **Next:** User does the manual review + label audit; then CP9 (fix highest-impact failure mode — leading candidate: pricing pages at non-standard paths, e.g. Jira — and re-run benchmark as v2 for the before/after resume bullet).
 
+## 2026-08-27 — CP8 manual review complete (human pass)
+**Done:** User reviewed all 30 sampled claims against their cited sources. Results: **26 valid, 4 invalid, 0 hallucinations → citation validity 86.7%, hallucination rate 0%** (design-doc target ≤5% — met with margin). Folded into `eval/results/v1.{md,json}`. Commit `db125e2`.
+**Pattern in the 4 invalids — all are pricing claims:** three are "pricing unavailable" claims (Slack, Notion, Lovable) whose pricing pages render prices via JavaScript — the claims honestly describe what was retrievable, but the reviewer judged the citations don't support "not published" when a browser plainly shows prices. The fourth is Linear's pricing claim (reason not yet recorded — ask user; possibly a billing-period detail mismatch). This makes **pricing-page retrieval the confirmed highest-impact failure mode** (drives all citation-validity loss AND the Jira-style non-standard-path misses) → CP9 target.
+**Next:** CP9 — fix pricing-page retrieval (JS rendering and/or path discovery), re-run benchmark as v2, record before/after.
+
 ## V2 ideas (parking lot — out of V1 scope)
 - (log future feature ideas here instead of building them)
