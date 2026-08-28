@@ -5,11 +5,18 @@ interpolated only from ALLOWED_TABLES / model code, never from user input;
 all values go through ? placeholders.
 """
 
+import os
 import sqlite3
 from pathlib import Path
 
+from app import config  # noqa: F401  (loads .env so DATABASE_PATH is visible)
+
 SCHEMA_PATH = Path(__file__).parent / "schema.sql"
-DEFAULT_DB_PATH = Path(__file__).resolve().parents[1] / "ci.db"
+# In production, point DATABASE_PATH at a persistent volume (e.g. /data/ci.db)
+# so report links survive redeploys.
+DEFAULT_DB_PATH = Path(
+    os.getenv("DATABASE_PATH") or Path(__file__).resolve().parents[1] / "ci.db"
+)
 
 ALLOWED_TABLES = {
     "products",
