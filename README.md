@@ -5,7 +5,7 @@ competitor discovery, feature comparison, and pricing analysis across up to
 five verified competitors, where **every factual claim links to a retrievable
 public source with its retrieval date**.
 
-> **Live demo:** _deployment link pending_ · **Demo video:** _link pending_
+> **Live demo: [ai-competitive-intelligence-eight.vercel.app](https://ai-competitive-intelligence-eight.vercel.app)** · Demo video: _pending final UI_
 
 Built as a portfolio project for APM/PM applications, around one principle:
 an AI-generated competitive report is only useful if a PM can quickly verify

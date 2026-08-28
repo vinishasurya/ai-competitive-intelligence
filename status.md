@@ -17,7 +17,7 @@
 | CP7 | Report UI | ✅ Done (2026-08-27, commit c5c90e0) |
 | CP8 | Evaluation suite (10-product benchmark) | ✅ Done (2026-08-27, commit 0a32a3a) |
 | CP9 | Iterate on worst failure mode | 🟡 Fix shipped + measured (+15pt pricing availability); manual re-review pending |
-| CP10 | Deploy & portfolio polish | ⬜ Not started |
+| CP10 | Deploy & portfolio polish | 🟡 Deployed + live-verified; demo video & UI redesign pending |
 
 ## Right now
 **Baseline benchmark published** (`eval/results/baseline.md` — evaluation runs are named `baseline` / `post-fix`, both measuring the V1 product): 10/10 products, category accuracy 100%, competitor precision 84% strict / 100% lenient, pricing 16/16 labeled tiers, citation coverage 100%, 1 flag, mean 142s / 34¢ per report — all design-doc targets exceeded. 66 passing tests. Product runs in browser at localhost:3000.
@@ -28,8 +28,16 @@
 ## CP9 measured (2026-08-28)
 Pricing retrieval fix (rendered fallback + URL discovery + misattribution guard): **pricing availability 70% → 85%**, everything else held, +2.2¢/+12s per report. Full table: `eval/results/comparison.md`.
 
-## Next step — ONE HUMAN TASK, then CP10
-Re-review `eval/results/post-fix_manual_review.md` (mark valid/invalid/hallucination; the pricing claims are the ones that changed) → produces post-fix citation validity + hallucination rate → closes CP9 and fills the "improved from 86.7% to X%" resume bullet. Then CP10: deploy + README + failure gallery + demo video.
+## Live deployment (2026-08-28)
+- **Repo:** https://github.com/vinishasurya/ai-competitive-intelligence (public)
+- **Live demo:** https://ai-competitive-intelligence-eight.vercel.app (frontend, Vercel) → https://ai-competitive-intelligence-production.up.railway.app (backend, Railway/Docker/Playwright)
+- Verified end-to-end on production via headless browser: Linear report in 156s / $0.35, 100% cited, citations resolve.
+- Ops notes: FRONTEND_ORIGIN env wires CORS; git now pushes as vinishasurya via gh credential helper (old UmaRavisFamily keychain cred bypassed).
+
+## Remaining to finish the project
+1. **Post-fix manual review** (`eval/results/post-fix_manual_review.md`) → fills citation-validity "improved 86.7% → X%" resume bullet (human task).
+2. **UI redesign** (user-requested) — iterate freely; every push auto-deploys. Keep trust elements prominent (badges, citations, retrieval dates, fetch-failed markers).
+3. **Demo video last** — re-record footage (`frontend/scripts/record-demo.mjs`) + CP7 screenshots against the final UI, then record narration per `docs/demo-script.md`; update README links.
 
 ## Failure gallery entries (for CP10)
 1. Non-standard pricing paths (Jira) → URL discovery via links + search.
