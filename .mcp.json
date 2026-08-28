@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "competitive-intelligence": {
+      "command": "uv",
+      "args": ["run", "--project", "backend", "python", "backend/mcp_server.py"]
+    }
+  }
+}

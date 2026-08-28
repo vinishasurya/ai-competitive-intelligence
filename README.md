@@ -81,6 +81,7 @@ flowchart LR
 | AI | Claude Opus 4.8 (profiling/synthesis) + Claude Haiku 4.5 (extraction/verification) | Quality where it matters, cost control where it's called 20× per run |
 | Retrieval | Tavily search + httpx/trafilatura crawler + Playwright rendered fallback | Current public evidence; JS pages readable |
 | Frontend | Next.js, React, TypeScript, Tailwind | Report UI with trust labels and claim-level citations |
+| Tool interface | The four research tools, also exposed via [MCP](docs/mcp.md) | Portable: any MCP client can drive the toolchain |
 | Eval | Labeled benchmark + deterministic metrics + human review worksheet | Published results incl. regressions |
 
 ## Run it locally
@@ -106,6 +107,8 @@ uv run python ../eval/run_eval.py --version my-run
 - `backend/app/` — pipeline modules: `profiler` → `discovery` → `evidence` →
   `report` → `pipeline`, plus `evaluation` (metrics) and `tools/` (search,
   crawler, rendered crawler)
+- `backend/mcp_server.py` — the research tools exposed as an
+  [MCP server](docs/mcp.md) usable from Claude Desktop / Claude Code
 - `eval/` — benchmark labels, runner, published results
 - `docs/` — [failure gallery](docs/failure-gallery.md) ·
   [design decisions & deviations](docs/design-decisions.md) ·

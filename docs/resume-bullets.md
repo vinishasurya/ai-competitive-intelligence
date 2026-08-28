@@ -19,6 +19,11 @@ pending the post-fix human review; do not use it until filled.
   validity from 86.7% to __% — **pending post-fix manual review**] by adding
   headless-browser rendering and pricing-URL discovery.
 
+- Exposed the platform's research toolchain (web search, crawling,
+  pricing extraction, competitor discovery) as a Model Context Protocol
+  (MCP) server, making the same verified tools usable from any
+  MCP-compatible AI client such as Claude Desktop.
+
 Interview talking points behind each number:
 - **Why verification matters:** model-suggested competitors are leads, not
   facts — website verification caught an acquired company (Perimeter 81 →
