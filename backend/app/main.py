@@ -5,6 +5,7 @@ design). Job state lives in memory; completed reports live in SQLite, so
 report links stay stable across restarts.
 """
 
+import os
 import threading
 import uuid
 from contextlib import asynccontextmanager
@@ -35,7 +36,7 @@ app = FastAPI(title="AI Competitive Intelligence API", version="0.2.0",
 # cross-origin requests unless the API explicitly allows them.
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],
+    allow_origins=[os.getenv("FRONTEND_ORIGIN", "http://localhost:3000")],
     allow_methods=["*"],
     allow_headers=["*"],
 )
