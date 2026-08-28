@@ -606,5 +606,15 @@
       "cost_cents": 32.3,
       "tokens": 78187
     }
-  ]
+  ],
+  "manual_review": {
+    "claims_reviewed": 30,
+    "valid": 26,
+    "invalid": 4,
+    "hallucinations": 0,
+    "citation_validity": 0.867,
+    "hallucination_rate": 0.0,
+    "reviewer": "Ravi's team (human)",
+    "reviewed_on": "2026-08-27"
+  }
 }
