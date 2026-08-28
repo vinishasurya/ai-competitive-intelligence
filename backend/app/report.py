@@ -276,7 +276,30 @@ def report_payload(conn: sqlite3.Connection, run_id: int) -> dict | None:
         ).fetchall()
     }
 
+    # Structured pricing findings per company, for the comparison table.
+    comp_by_id = {c["id"]: c for c in conn.execute(
+        "SELECT id, name, domain FROM competitors WHERE run_id = ?", (run_id,)
+    ).fetchall()}
+    pricing_rows = []
+    for row in conn.execute(
+        "SELECT competitor_id, value_json, source_ids_json FROM findings "
+        "WHERE run_id = ? AND dimension = 'pricing' ORDER BY competitor_id IS NOT NULL, id",
+        (run_id,),
+    ).fetchall():
+        value = json.loads(row["value_json"])
+        comp = comp_by_id.get(row["competitor_id"])
+        pricing_rows.append({
+            "company": comp["name"] if comp else product["name"],
+            "domain": comp["domain"] if comp else product["domain"],
+            "is_subject": comp is None,
+            "available": bool(value.get("available")),
+            "tiers": value.get("tiers", []),
+            "notes": value.get("notes"),
+            "source_ids": json.loads(row["source_ids_json"]),
+        })
+
     return {
+        "pricing": pricing_rows,
         "run": {
             "id": run["id"], "status": run["status"], "error": run["error"],
             "started_at": run["started_at"], "finished_at": run["finished_at"],

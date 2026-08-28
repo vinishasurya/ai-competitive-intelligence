@@ -73,26 +73,32 @@ export default function Home() {
 
   return (
     <main className="mx-auto flex min-h-screen max-w-2xl flex-col justify-center px-6 py-16">
-      <h1 className="text-4xl font-bold tracking-tight">
-        AI Competitive Intelligence
+      <p className="text-xs font-bold uppercase tracking-[0.12em] text-teal">
+        Evidence-backed competitive research
+      </p>
+      <h1 className="mt-3 text-[2.6rem] leading-[1.05] font-bold tracking-[-0.03em] text-ink">
+        Know the competition.
+        <br />
+        <span className="text-sub font-medium">Verify every claim.</span>
       </h1>
-      <p className="mt-3 text-lg text-gray-500">
-        Enter a software product&apos;s URL. Get an evidence-backed competitive
-        report — every claim cited to a retrievable public source.
+      <p className="mt-5 max-w-[52ch] leading-relaxed text-sub">
+        Enter a software product&apos;s URL. Get a competitive report — verified
+        rivals, features, and pricing — where every fact links to a retrievable
+        public source with its retrieval date.
       </p>
 
-      <form onSubmit={start} className="mt-8 flex gap-3">
+      <form onSubmit={start} className="mt-9 flex gap-3">
         <input
           value={url}
           onChange={(e) => setUrl(e.target.value)}
           placeholder="e.g. linear.app"
           disabled={!!running}
-          className="flex-1 rounded-lg border border-gray-300 px-4 py-3 text-lg outline-none focus:border-blue-500 disabled:bg-gray-100"
+          className="card-shadow flex-1 rounded-[14px] border border-card-line bg-white px-5 py-3.5 text-lg text-ink outline-none transition placeholder:text-sub/60 focus:border-teal disabled:bg-row-line"
         />
         <button
           type="submit"
           disabled={!!running}
-          className="rounded-lg bg-blue-600 px-6 py-3 text-lg font-semibold text-white hover:bg-blue-700 disabled:bg-gray-300"
+          className="rounded-[14px] bg-ink px-7 py-3.5 text-lg font-semibold text-white transition hover:bg-ink-soft disabled:bg-sub/40"
         >
           {running ? "Researching…" : "Research"}
         </button>
@@ -101,12 +107,12 @@ export default function Home() {
       {error && <p className="mt-4 text-red-600">{error}</p>}
 
       {job?.status === "failed" && (
-        <div className="mt-6 rounded-lg border border-red-200 bg-red-50 p-4">
+        <div className="card-shadow mt-7 rounded-[14px] border border-red-200 bg-white p-5">
           <p className="font-semibold text-red-700">Run failed</p>
-          <p className="mt-1 text-sm text-red-600">{job.error}</p>
+          <p className="mt-1 text-sm leading-relaxed text-sub">{job.error}</p>
           <button
             onClick={() => start()}
-            className="mt-3 rounded-md bg-red-600 px-4 py-2 text-sm font-semibold text-white hover:bg-red-700"
+            className="mt-4 rounded-[10px] bg-ink px-4 py-2 text-sm font-semibold text-white hover:bg-ink-soft"
           >
             Retry
           </button>
@@ -114,12 +120,14 @@ export default function Home() {
       )}
 
       {running && (
-        <div className="mt-8 rounded-xl border border-gray-200 p-6">
+        <div className="card-shadow mt-9 rounded-[14px] bg-white p-6">
           <div className="flex items-center justify-between">
-            <p className="font-semibold">Research in progress</p>
-            <p className="font-mono text-sm text-gray-400">{elapsed}s</p>
+            <p className="text-xs font-bold uppercase tracking-[0.08em] text-sub">
+              Research in progress
+            </p>
+            <p className="font-mono text-sm tabular-nums text-teal">{elapsed}s</p>
           </div>
-          <ol className="mt-4 space-y-3">
+          <ol className="mt-5 space-y-3.5">
             {STAGES.map((stage, i) => {
               const state =
                 i < activeIdx ? "done" : i === activeIdx ? "active" : "pending";
@@ -128,27 +136,29 @@ export default function Home() {
                   <span
                     className={
                       state === "done"
-                        ? "h-2.5 w-2.5 rounded-full bg-emerald-500"
+                        ? "h-2.5 w-2.5 rounded-full bg-teal"
                         : state === "active"
-                          ? "h-2.5 w-2.5 animate-pulse rounded-full bg-blue-500"
-                          : "h-2.5 w-2.5 rounded-full bg-gray-200"
+                          ? "h-2.5 w-2.5 animate-pulse rounded-full bg-mint"
+                          : "h-2.5 w-2.5 rounded-full bg-row-line"
                     }
                   />
                   <span
                     className={
-                      state === "pending" ? "text-gray-400" : "text-gray-900"
+                      state === "pending"
+                        ? "text-sub/70"
+                        : "font-medium text-ink"
                     }
                   >
                     {stage.label}
                   </span>
                   {state === "active" && (
-                    <span className="text-sm text-gray-400">{job?.detail}</span>
+                    <span className="text-sm text-sub">{job?.detail}</span>
                   )}
                 </li>
               );
             })}
           </ol>
-          <p className="mt-4 text-sm text-gray-400">
+          <p className="mt-5 text-sm text-sub/80">
             A full report typically takes 2–4 minutes.
           </p>
         </div>

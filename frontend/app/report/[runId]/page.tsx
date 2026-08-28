@@ -12,6 +12,21 @@ type ClaimRow = {
   source_ids: number[];
   confidence: number | null;
 };
+type Tier = {
+  name: string;
+  price_text: string;
+  price_usd: number | null;
+  billing_period: string;
+};
+type PricingRow = {
+  company: string;
+  domain: string;
+  is_subject: boolean;
+  available: boolean;
+  tiers: Tier[];
+  notes: string | null;
+  source_ids: number[];
+};
 type Payload = {
   run: {
     id: number; status: string; started_at: string; finished_at: string | null;
@@ -24,6 +39,7 @@ type Payload = {
   }[];
   sections: Record<string, ClaimRow[]>;
   sources: Record<string, Source>;
+  pricing: PricingRow[];
   flags: { claim_id: number; section: string; flag: string; detail: string }[];
   citation_coverage: number | null;
 };
@@ -36,9 +52,9 @@ const SECTION_TITLES: Record<string, string> = {
 };
 
 const BADGES: Record<ClaimRow["claim_type"], { label: string; cls: string }> = {
-  verified: { label: "Verified", cls: "bg-emerald-100 text-emerald-800" },
+  verified: { label: "Verified", cls: "bg-mint-wash text-teal-deep" },
   reported: { label: "Reported", cls: "bg-amber-100 text-amber-800" },
-  interpretation: { label: "Analysis", cls: "bg-violet-100 text-violet-800" },
+  interpretation: { label: "Analysis", cls: "bg-ink text-mint" },
 };
 
 function fmtDate(iso: string | null): string {
@@ -66,9 +82,8 @@ export default function ReportPage({
 
   if (error)
     return <main className="p-10 text-red-600">Could not load report: {error}</main>;
-  if (!data) return <main className="p-10 text-gray-400">Loading report…</main>;
+  if (!data) return <main className="p-10 text-sub">Loading report…</main>;
 
-  // Stable footnote numbering: sorted source ids -> 1..n
   const sourceIds = Object.keys(data.sources).map(Number).sort((a, b) => a - b);
   const footnote = new Map(sourceIds.map((id, i) => [id, i + 1]));
 
@@ -80,52 +95,87 @@ export default function ReportPage({
         )
       : null;
 
+  const Cite = ({ sid }: { sid: number }) => {
+    const src = data.sources[String(sid)];
+    if (!src) return null;
+    return (
+      <a
+        href={src.url}
+        target="_blank"
+        rel="noreferrer"
+        title={`${src.url} (${src.source_type}, retrieved ${fmtDate(src.fetched_at)})`}
+        className="ml-0.5 align-super text-xs font-bold text-teal hover:underline"
+      >
+        [{footnote.get(sid)}]
+      </a>
+    );
+  };
+
+  const stats = [
+    {
+      value: data.citation_coverage !== null
+        ? `${Math.round(data.citation_coverage * 100)}%`
+        : "—",
+      label: "claims cited",
+      hot: true,
+    },
+    { value: String(data.competitors.length), label: "verified rivals" },
+    { value: durationSec !== null ? `${durationSec}s` : "—", label: "research time" },
+    { value: `$${(data.run.cost_cents / 100).toFixed(2)}`, label: "model cost" },
+  ];
+
   return (
     <main className="mx-auto max-w-3xl px-6 py-12">
-      <a href="/" className="text-sm text-blue-600 hover:underline">
+      <a href="/" className="text-sm font-medium text-teal hover:underline">
         ← New report
       </a>
-      <h1 className="mt-2 text-3xl font-bold">
-        {data.product.name}{" "}
-        <span className="font-normal text-gray-400">competitive report</span>
-      </h1>
-      <p className="mt-1 text-gray-500">{data.product.category}</p>
-      <p className="mt-2 text-sm text-gray-400">
-        Generated {fmtDate(data.run.finished_at)}
-        {durationSec !== null && <> · {durationSec}s</>}
-        {" · "}${(data.run.cost_cents / 100).toFixed(2)} model cost
-        {data.citation_coverage !== null && (
-          <> · {Math.round(data.citation_coverage * 100)}% of factual claims cited</>
-        )}
+      <p className="mt-4 text-xs font-bold uppercase tracking-[0.1em] text-teal">
+        Competitive report · {fmtDate(data.run.finished_at)}
       </p>
+      <h1 className="mt-1.5 text-3xl font-bold tracking-[-0.03em] text-ink">
+        {data.product.name}{" "}
+        <span className="font-normal text-sub">{data.product.category}</span>
+      </h1>
+
+      <div className="mt-6 grid grid-cols-2 gap-2.5 sm:grid-cols-4">
+        {stats.map((s) => (
+          <div key={s.label} className="rounded-[14px] bg-ink px-4 py-3">
+            <b className={`block text-xl tabular-nums tracking-[-0.02em] ${s.hot ? "text-mint" : "text-white"}`}>
+              {s.value}
+            </b>
+            <span className="text-[0.62rem] font-semibold uppercase tracking-[0.06em] text-white/50">
+              {s.label}
+            </span>
+          </div>
+        ))}
+      </div>
 
       <div className="mt-5 flex flex-wrap gap-2">
         {data.competitors.map((c) => (
           <span
             key={c.id}
             title={`${c.relationship ?? ""} · confidence ${c.confidence ?? "?"} · found via ${c.discovery_methods.join(", ")}`}
-            className="rounded-full border border-gray-300 px-3 py-1 text-sm"
+            className="rounded-[10px] border border-card-line bg-white px-3 py-1.5 text-sm font-medium text-ink"
           >
             {c.name}
-            {c.relationship === "direct" && (
-              <span className="ml-1.5 text-xs text-emerald-600">direct</span>
-            )}
-            {c.relationship === "adjacent" && (
-              <span className="ml-1.5 text-xs text-amber-600">adjacent</span>
+            {c.relationship && (
+              <span className="ml-1.5 text-xs font-bold text-teal">
+                {c.relationship === "adjacent" ? "adj" : c.relationship}
+              </span>
             )}
           </span>
         ))}
       </div>
 
       {data.flags.length > 0 && (
-        <div className="mt-6 rounded-lg border border-amber-300 bg-amber-50 p-4 text-sm">
-          <p className="font-semibold text-amber-800">
+        <div className="card-shadow mt-6 rounded-[14px] border border-amber-200 bg-white p-4 text-sm">
+          <p className="font-bold text-amber-700">
             {data.flags.length} validation flag{data.flags.length > 1 && "s"}
           </p>
-          <ul className="mt-1 list-inside list-disc text-amber-700">
+          <ul className="mt-1 list-inside list-disc text-sub">
             {data.flags.map((f, i) => (
               <li key={i}>
-                <span className="font-mono">{f.flag}</span>: {f.detail}
+                <span className="font-mono text-xs">{f.flag}</span>: {f.detail}
               </li>
             ))}
           </ul>
@@ -133,66 +183,113 @@ export default function ReportPage({
       )}
 
       {Object.entries(SECTION_TITLES).map(([key, title]) => (
-        <section key={key} className="mt-10">
-          <h2 className="border-b border-gray-200 pb-2 text-xl font-bold">
+        <section key={key} className="mt-11">
+          <h2 className="text-xs font-bold uppercase tracking-[0.09em] text-sub">
             {title}
           </h2>
-          <ul className="mt-4 space-y-4">
+          <ul className="mt-4 space-y-2.5">
             {(data.sections[key] ?? []).map((claim) => {
               const badge = BADGES[claim.claim_type];
               return (
-                <li key={claim.id} className="flex gap-3">
+                <li
+                  key={claim.id}
+                  className="card-shadow flex gap-3 rounded-[14px] bg-white px-4 py-3.5"
+                >
                   <span
-                    className={`mt-0.5 h-fit shrink-0 rounded px-1.5 py-0.5 text-xs font-semibold ${badge.cls}`}
+                    className={`mt-0.5 h-fit shrink-0 rounded-[7px] px-2 py-0.5 text-[0.62rem] font-extrabold uppercase tracking-[0.04em] ${badge.cls}`}
                   >
                     {badge.label}
                   </span>
-                  <p className="leading-relaxed">
+                  <p className="leading-relaxed text-ink">
                     {claim.text}{" "}
-                    {claim.source_ids.map((sid) => {
-                      const src = data.sources[String(sid)];
-                      if (!src) return null;
-                      return (
-                        <a
-                          key={sid}
-                          href={src.url}
-                          target="_blank"
-                          rel="noreferrer"
-                          title={`${src.url} (${src.source_type}, retrieved ${fmtDate(src.fetched_at)})`}
-                          className="ml-0.5 align-super text-xs font-semibold text-blue-600 hover:underline"
-                        >
-                          [{footnote.get(sid)}]
-                        </a>
-                      );
-                    })}
+                    {claim.source_ids.map((sid) => (
+                      <Cite key={sid} sid={sid} />
+                    ))}
                   </p>
                 </li>
               );
             })}
           </ul>
+
+          {key === "pricing_comparison" && data.pricing?.length > 0 && (
+            <div className="card-shadow mt-4 overflow-x-auto rounded-[14px] bg-white">
+              <table className="w-full border-collapse text-sm tabular-nums">
+                <thead>
+                  <tr className="bg-ink text-left text-[0.66rem] font-bold uppercase tracking-[0.05em] text-white">
+                    <th className="px-4 py-2.5">Company</th>
+                    <th className="px-4 py-2.5">Public tiers</th>
+                    <th className="px-4 py-2.5">Src</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {data.pricing.map((row) => (
+                    <tr key={row.domain + row.company} className="border-b border-row-line last:border-0 align-top">
+                      <td className="px-4 py-3 font-semibold text-ink">
+                        {row.company}
+                        {row.is_subject && (
+                          <span className="ml-1.5 text-[0.6rem] font-bold uppercase text-teal">subject</span>
+                        )}
+                      </td>
+                      <td className="px-4 py-3">
+                        {row.available ? (
+                          <div className="flex flex-wrap gap-1.5">
+                            {row.tiers.map((t, i) => (
+                              <span
+                                key={i}
+                                className="rounded-[7px] bg-row-line px-2 py-1 text-xs font-medium text-ink"
+                                title={t.price_text}
+                              >
+                                {t.name}{" "}
+                                <b className="text-teal-deep">
+                                  {t.price_usd !== null
+                                    ? `$${t.price_usd}${t.billing_period === "monthly" || t.billing_period === "annual" ? "/mo" : ""}`
+                                    : t.price_text.length <= 16
+                                      ? t.price_text
+                                      : "—"}
+                                </b>
+                              </span>
+                            ))}
+                          </div>
+                        ) : (
+                          <span className="text-sub">Unavailable — {row.notes ?? "no accessible pricing page"}</span>
+                        )}
+                      </td>
+                      <td className="px-4 py-3">
+                        {row.source_ids.map((sid) => (
+                          <Cite key={sid} sid={sid} />
+                        ))}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
         </section>
       ))}
 
       <section className="mt-12">
-        <h2 className="border-b border-gray-200 pb-2 text-xl font-bold">Sources</h2>
-        <ol className="mt-4 space-y-1.5 text-sm">
+        <h2 className="text-xs font-bold uppercase tracking-[0.09em] text-sub">
+          Sources
+        </h2>
+        <ol className="card-shadow mt-4 space-y-2 rounded-[14px] bg-white p-5 text-sm">
           {sourceIds.map((sid) => {
             const src = data.sources[String(sid)];
             return (
-              <li key={sid} className="flex gap-2">
-                <span className="w-8 shrink-0 font-semibold text-gray-400">
+              <li key={sid} className="flex gap-2.5">
+                <span className="w-8 shrink-0 font-bold tabular-nums text-sub/70">
                   [{footnote.get(sid)}]
                 </span>
-                <span>
+                <span className="min-w-0">
                   <a
                     href={src.url}
                     target="_blank"
                     rel="noreferrer"
-                    className="break-all text-blue-600 hover:underline"
+                    className="break-all font-medium text-teal hover:underline"
                   >
                     {src.url}
                   </a>{" "}
-                  <span className="text-gray-400">
+                  <span className="text-sub">
                     {src.source_type} · retrieved {fmtDate(src.fetched_at)}
                     {!src.ok && " · fetch failed"}
                   </span>
@@ -203,11 +300,11 @@ export default function ReportPage({
         </ol>
       </section>
 
-      <p className="mt-12 border-t border-gray-100 pt-4 text-xs text-gray-400">
-        Facts marked <b>Verified</b> come from the company&apos;s own website;{" "}
-        <b>Analysis</b> is AI interpretation of the cited evidence. Missing
-        information is reported as unavailable, never inferred. This report link
-        is stable and shareable.
+      <p className="mt-12 border-t border-card-line pt-4 text-xs leading-relaxed text-sub">
+        Facts marked <b className="text-teal-deep">Verified</b> come from the
+        company&apos;s own website; <b className="text-ink">Analysis</b> is AI
+        interpretation of the cited evidence. Missing information is reported as
+        unavailable, never inferred. This report link is stable and shareable.
       </p>
     </main>
   );
