@@ -78,6 +78,9 @@ def crawl_page_rendered(url: str, timeout: float = 30.0, use_cache: bool = True)
         with sync_playwright() as p:
             browser = p.chromium.launch()
             page = browser.new_page(user_agent=USER_AGENT)
+            # Bound EVERY page operation (goto, inner_text, content), not just
+            # navigation — a slow site must fail fast, not stall the pipeline.
+            page.set_default_timeout(timeout * 1000)
             response = page.goto(url, wait_until="domcontentloaded",
                                  timeout=timeout * 1000)
             page.wait_for_timeout(6000)  # let client-side rendering settle

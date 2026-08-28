@@ -12,14 +12,62 @@ import json
 import sys
 from pathlib import Path
 
+import json as _json
+from datetime import datetime
+
 from app.db import connect, init_db
+from app.discovery import normalize_domain
 from app.evaluation import (
     aggregate,
     evaluate_product,
     load_benchmark,
     record_eval_results,
 )
-from app.pipeline import run_pipeline
+from app.pipeline import PipelineResult, run_pipeline
+from app.report import ReportResult, validate_run
+
+
+def rebuild_result(conn, label) -> PipelineResult | None:
+    """Reconstruct a PipelineResult from a previously completed run in the db,
+    so --resume can score it without re-running the pipeline."""
+    domain = normalize_domain(label.url)
+    row = conn.execute(
+        "SELECT r.*, p.category FROM runs r JOIN products p ON p.id = r.product_id "
+        "WHERE p.domain LIKE ? AND r.status = 'completed' ORDER BY r.id DESC LIMIT 1",
+        (f"%{domain}%",),
+    ).fetchone()
+    if row is None:
+        return None
+    run_id = row["id"]
+    competitors = [
+        {"name": c["name"], "domain": c["domain"]}
+        for c in conn.execute(
+            "SELECT name, domain FROM competitors WHERE run_id = ? AND verified = 1",
+            (run_id,),
+        ).fetchall()
+    ]
+    factual = sourced = 0
+    for c in conn.execute(
+        "SELECT claim_type, source_ids_json FROM claims WHERE run_id = ?", (run_id,)
+    ).fetchall():
+        if c["claim_type"] != "interpretation":
+            factual += 1
+            sourced += bool(_json.loads(c["source_ids_json"]))
+    latency = (
+        datetime.fromisoformat(row["finished_at"])
+        - datetime.fromisoformat(row["started_at"])
+    ).total_seconds()
+    return PipelineResult(
+        ok=True, url=label.url, run_id=run_id, category=row["category"],
+        competitors=competitors,
+        report=ReportResult(
+            ok=True, run_id=run_id,
+            citation_coverage=(sourced / factual) if factual else None,
+            flags=validate_run(conn, run_id),
+        ),
+        cost_cents=row["cost_cents"], total_tokens=row["token_count"],
+        tool_calls=row["tool_calls"], duration_seconds=latency,
+    )
 
 EVAL_DIR = Path(__file__).resolve().parent
 RESULTS_DIR = EVAL_DIR / "results"
@@ -129,6 +177,8 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--version", required=True)
     parser.add_argument("--only", help="comma-separated product urls to run")
+    parser.add_argument("--resume", action="store_true",
+                        help="keep the existing db; skip products already completed")
     args = parser.parse_args()
 
     labels = load_benchmark(EVAL_DIR / "benchmark.json")
@@ -138,20 +188,27 @@ def main():
 
     RESULTS_DIR.mkdir(exist_ok=True)
     db_path = RESULTS_DIR / f"{args.version}.db"
-    db_path.unlink(missing_ok=True)
+    if not args.resume:
+        db_path.unlink(missing_ok=True)
     conn = connect(db_path)
     init_db(conn)
 
     evals = []
     for i, label in enumerate(labels, 1):
-        print(f"[{i}/{len(labels)}] {label.url} ...", flush=True)
-        try:
-            result = run_pipeline(conn, label.url)
-        except Exception as exc:  # a crashed product must not kill the benchmark
-            from app.pipeline import PipelineResult
-            result = PipelineResult(ok=False, url=label.url,
-                                    error=f"{type(exc).__name__}: {exc}")
+        result = rebuild_result(conn, label) if args.resume else None
+        if result is not None:
+            print(f"[{i}/{len(labels)}] {label.url} ... (resumed from db)", flush=True)
+        else:
+            print(f"[{i}/{len(labels)}] {label.url} ...", flush=True)
+            try:
+                result = run_pipeline(conn, label.url)
+            except Exception as exc:  # a crashed product must not kill the benchmark
+                result = PipelineResult(ok=False, url=label.url,
+                                        error=f"{type(exc).__name__}: {exc}")
         ev = evaluate_product(conn, label, result)
+        if ev.run_id is not None:  # avoid duplicate metric rows on resume
+            conn.execute("DELETE FROM eval_results WHERE run_id = ?", (ev.run_id,))
+            conn.commit()
         record_eval_results(conn, ev)
         evals.append(ev)
         status = ("ok" if ev.ok else f"FAILED: {ev.error}")
