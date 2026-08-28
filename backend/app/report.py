@@ -59,10 +59,10 @@ Rules:
 - Base every claim ONLY on the bundle. No outside knowledge, even about \
 companies you recognize.
 - claim_type:
-  * verified — a fact directly stated in a finding extracted from the company's \
+  * verified: a fact directly stated in a finding extracted from the company's \
 own website. Must cite that finding's source_ids.
-  * reported — a fact supported only by a non-primary source. Rare here.
-  * interpretation — analysis, synthesis, comparison judgments, or takeaways. \
+  * reported: a fact supported only by a non-primary source. Rare here.
+  * interpretation: analysis, synthesis, comparison judgments, or takeaways. \
 ALL recommendations and judgments must be labeled interpretation, and must \
 cite the source_ids of the evidence they rest on.
 - Cite only source_ids that exist in the sources index. Never cite nothing on a \
@@ -70,7 +70,17 @@ verified or reported claim.
 - Pricing facts must cite sources whose type is "pricing". If a company's \
 pricing finding says unavailable, say so as a verified claim citing that \
 finding's sources.
-- Write 3-8 claims, each 1-2 specific, readable sentences. confidence is 0..1."""
+- Write 3-8 claims, each 1-2 specific, readable sentences. confidence is 0..1.
+- Style: never use em dashes or en dashes in claim text. Use commas, colons, \
+parentheses, or separate sentences instead."""
+
+
+def _clean_text(text: str) -> str:
+    """House style: no em/en dashes in user-facing generated text."""
+    return (
+        text.replace(" — ", ", ").replace("—", "-")
+            .replace(" – ", ", ").replace("–", "-")
+    )
 
 
 # ---------- structured-output schemas ----------
@@ -200,6 +210,7 @@ def generate_report(
             result = generate_section(section, bundle, usage)
             stored = []
             for claim in result.claims:
+                claim = claim.model_copy(update={"text": _clean_text(claim.text)})
                 claim_id = insert_row(conn, "claims", Claim(
                     run_id=run_id, section=section, text=claim.text,
                     claim_type=claim.claim_type, source_ids=claim.source_ids,
@@ -251,7 +262,8 @@ def report_payload(conn: sqlite3.Connection, run_id: int) -> dict | None:
             factual += 1
             sourced += bool(source_ids)
         sections.setdefault(row["section"], []).append({
-            "id": row["id"], "text": row["text"], "claim_type": row["claim_type"],
+            "id": row["id"], "text": _clean_text(row["text"]),
+            "claim_type": row["claim_type"],
             "source_ids": source_ids, "confidence": row["confidence"],
         })
 
@@ -294,7 +306,7 @@ def report_payload(conn: sqlite3.Connection, run_id: int) -> dict | None:
             "is_subject": comp is None,
             "available": bool(value.get("available")),
             "tiers": value.get("tiers", []),
-            "notes": value.get("notes"),
+            "notes": _clean_text(value["notes"]) if value.get("notes") else None,
             "source_ids": json.loads(row["source_ids_json"]),
         })
 

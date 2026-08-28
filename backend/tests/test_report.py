@@ -180,3 +180,11 @@ class TestPipeline:
         run = fetch_row(conn, "runs", result.run_id)
         assert run["status"] == "failed"
         assert "search api down" in run["error"]
+
+
+def test_clean_text_removes_dashes():
+    from app.report import _clean_text
+    assert _clean_text("fast — and cheap") == "fast, and cheap"
+    assert _clean_text("2024—2026 range") == "2024-2026 range"
+    assert _clean_text("mid – tier") == "mid, tier"
+    assert "—" not in _clean_text("a — b—c — d")

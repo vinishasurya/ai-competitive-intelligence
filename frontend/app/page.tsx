@@ -62,7 +62,7 @@ export default function Home() {
         }
         if (data.status === "failed") clearInterval(poll);
       } catch {
-        /* transient poll failure — keep trying */
+        /* transient poll failure; keep trying */
       }
     }, 2000);
     return () => clearInterval(poll);
@@ -82,9 +82,9 @@ export default function Home() {
         <span className="text-sub font-medium">Verify every claim.</span>
       </h1>
       <p className="mt-5 max-w-[52ch] leading-relaxed text-sub">
-        Enter a software product&apos;s URL. Get a competitive report — verified
-        rivals, features, and pricing — where every fact links to a retrievable
-        public source with its retrieval date.
+        Enter a software product&apos;s URL. Get a competitive report covering
+        verified rivals, features, and pricing, where every fact links to a
+        retrievable public source with its retrieval date.
       </p>
 
       <form onSubmit={start} className="mt-9 flex gap-3">

@@ -104,7 +104,7 @@ of a software product, list its most likely direct competitors.
 Rules:
 - Up to 8 competitors, most relevant first.
 - domain must be the company's official website domain (e.g. "asana.com").
-- These are leads that will be independently verified — prefer well-known, \
+- These are leads that will be independently verified. Prefer well-known, \
 currently active products you are confident exist.
 - Do not include the product itself, review sites, or generic marketplaces."""
 
@@ -134,7 +134,7 @@ EXTRACT_SYSTEM = """You extract competitor products mentioned in web search resu
 
 Rules:
 - Only include actual software products/companies that compete with the subject \
-product — never review sites, blogs, listicle publishers, or marketplaces.
+product. Never include review sites, blogs, listicle publishers, or marketplaces.
 - domain must be the competitor's own official website domain. If the results \
 don't show it and you don't confidently know it, skip that competitor.
 - reason should quote or closely paraphrase the search-result evidence.
@@ -163,7 +163,7 @@ def search_candidates(profile: ProductProfile, usage: _Usage) -> tuple[list[Cand
     mentions = _parse(
         config.MODEL_EXTRACTOR,
         EXTRACT_SYSTEM,
-        f"Subject product: {profile.name} ({profile.domain}) — {profile.category}\n\n"
+        f"Subject product: {profile.name} ({profile.domain}), category: {profile.category}\n\n"
         f"Search results:\n{_format_results(responses)}",
         LeadList,
         usage,
@@ -192,7 +192,7 @@ def comparison_page_candidates(
     mentions = _parse(
         config.MODEL_EXTRACTOR,
         EXTRACT_SYSTEM,
-        f"Subject product: {profile.name} ({profile.domain}) — {profile.category}\n\n"
+        f"Subject product: {profile.name} ({profile.domain}), category: {profile.category}\n\n"
         f"These are comparison pages from the subject's OWN website. Extract the "
         f"companies it compares itself against:\n{_format_results([resp])}",
         LeadList,

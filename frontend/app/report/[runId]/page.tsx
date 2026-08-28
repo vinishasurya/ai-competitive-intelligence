@@ -58,7 +58,7 @@ const BADGES: Record<ClaimRow["claim_type"], { label: string; cls: string }> = {
 };
 
 function fmtDate(iso: string | null): string {
-  if (!iso) return "—";
+  if (!iso) return "-";
   return new Date(iso).toLocaleDateString(undefined, {
     year: "numeric", month: "short", day: "numeric",
   });
@@ -115,12 +115,12 @@ export default function ReportPage({
     {
       value: data.citation_coverage !== null
         ? `${Math.round(data.citation_coverage * 100)}%`
-        : "—",
+        : "-",
       label: "claims cited",
       hot: true,
     },
     { value: String(data.competitors.length), label: "verified rivals" },
-    { value: durationSec !== null ? `${durationSec}s` : "—", label: "research time" },
+    { value: durationSec !== null ? `${durationSec}s` : "-", label: "research time" },
     { value: `$${(data.run.cost_cents / 100).toFixed(2)}`, label: "model cost" },
   ];
 
@@ -245,13 +245,13 @@ export default function ReportPage({
                                     ? `$${t.price_usd}${t.billing_period === "monthly" || t.billing_period === "annual" ? "/mo" : ""}`
                                     : t.price_text.length <= 16
                                       ? t.price_text
-                                      : "—"}
+                                      : "-"}
                                 </b>
                               </span>
                             ))}
                           </div>
                         ) : (
-                          <span className="text-sub">Unavailable — {row.notes ?? "no accessible pricing page"}</span>
+                          <span className="text-sub">Unavailable: {row.notes ?? "no accessible pricing page"}</span>
                         )}
                       </td>
                       <td className="px-4 py-3">
