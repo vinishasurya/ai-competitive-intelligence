@@ -27,6 +27,15 @@ type PricingRow = {
   notes: string | null;
   source_ids: number[];
 };
+type AnalystAnswer = {
+  ok: boolean;
+  answer: string;
+  source_ids: number[];
+  trace: { tool: string; input: Record<string, unknown> }[];
+  turns: number;
+  cost_cents: number;
+  error: string | null;
+};
 type Payload = {
   run: {
     id: number; status: string; started_at: string; finished_at: string | null;
@@ -72,6 +81,31 @@ export default function ReportPage({
   const { runId } = use(params);
   const [data, setData] = useState<Payload | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [question, setQuestion] = useState("");
+  const [asking, setAsking] = useState(false);
+  const [reply, setReply] = useState<AnalystAnswer | null>(null);
+  const [showTrace, setShowTrace] = useState(false);
+
+  async function askAnalyst(e: React.FormEvent) {
+    e.preventDefault();
+    if (!question.trim() || asking) return;
+    setAsking(true);
+    setReply(null);
+    setShowTrace(false);
+    try {
+      const res = await fetch(`${API}/api/reports/${runId}/ask`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ question }),
+      });
+      setReply(await res.json());
+    } catch {
+      setReply({ ok: false, answer: "", source_ids: [], trace: [], turns: 0,
+                 cost_cents: 0, error: "could not reach the analyst" });
+    } finally {
+      setAsking(false);
+    }
+  }
 
   useEffect(() => {
     fetch(`${API}/api/reports/${runId}`)
@@ -181,6 +215,78 @@ export default function ReportPage({
           </ul>
         </div>
       )}
+
+      <section className="mt-9">
+        <h2 className="text-xs font-bold uppercase tracking-[0.09em] text-sub">
+          Ask the analyst
+        </h2>
+        <form onSubmit={askAnalyst} className="mt-3 flex gap-2">
+          <input
+            value={question}
+            onChange={(e) => setQuestion(e.target.value)}
+            placeholder={`e.g. What would ${data.product.name} cost for a 50-person team?`}
+            disabled={asking}
+            maxLength={500}
+            className="card-shadow flex-1 rounded-[12px] border border-card-line bg-white px-4 py-2.5 text-sm text-ink outline-none placeholder:text-sub/60 focus:border-teal disabled:bg-row-line"
+          />
+          <button
+            type="submit"
+            disabled={asking || !question.trim()}
+            className="rounded-[12px] bg-ink px-5 py-2.5 text-sm font-semibold text-white hover:bg-ink-soft disabled:bg-sub/40"
+          >
+            {asking ? "Researching…" : "Ask"}
+          </button>
+        </form>
+        {asking && (
+          <p className="mt-3 text-sm text-sub">
+            <span className="mr-2 inline-block h-2 w-2 animate-pulse rounded-full bg-mint" />
+            The analyst is checking the evidence (10–30s)…
+          </p>
+        )}
+        {reply && (
+          <div className="card-shadow mt-3 rounded-[14px] bg-white px-4 py-3.5">
+            {reply.ok ? (
+              <>
+                <p className="leading-relaxed text-ink">
+                  {reply.answer.split(/(\[\d+\])/g).map((part, i) => {
+                    const m = part.match(/^\[(\d+)\]$/);
+                    if (m && data.sources[m[1]]) {
+                      return <Cite key={i} sid={Number(m[1])} />;
+                    }
+                    return <span key={i}>{part}</span>;
+                  })}
+                </p>
+                <div className="mt-2.5 flex items-center gap-3 text-xs text-sub">
+                  {reply.trace.length > 0 && (
+                    <button
+                      onClick={() => setShowTrace(!showTrace)}
+                      className="font-semibold text-teal hover:underline"
+                    >
+                      {showTrace ? "Hide" : "Show"} research trace ({reply.trace.length} tool call{reply.trace.length !== 1 && "s"})
+                    </button>
+                  )}
+                  <span>{reply.turns} turn{reply.turns !== 1 && "s"} · {(reply.cost_cents / 100).toLocaleString(undefined, { style: "currency", currency: "USD", minimumFractionDigits: 2 })}</span>
+                </div>
+                {showTrace && (
+                  <ol className="mt-2 space-y-1 border-t border-row-line pt-2 font-mono text-xs text-sub">
+                    {reply.trace.map((step, i) => (
+                      <li key={i}>
+                        {i + 1}. {step.tool}
+                        {Object.keys(step.input).length > 0 &&
+                          `(${Object.entries(step.input).map(([k, v]) => `${k}: ${JSON.stringify(v)}`).join(", ")})`}
+                      </li>
+                    ))}
+                  </ol>
+                )}
+              </>
+            ) : (
+              <p className="text-sm text-red-600">
+                The analyst could not answer: {reply.error}
+              </p>
+            )}
+          </div>
+        )}
+      </section>
 
       {Object.entries(SECTION_TITLES).map(([key, title]) => (
         <section key={key} className="mt-11">

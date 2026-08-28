@@ -14,6 +14,7 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
+from app.analyst import ask_analyst
 from app.db import connect, init_db
 from app.pipeline import run_pipeline
 from app.report import report_payload
@@ -97,6 +98,25 @@ def get_report(run_id: int) -> dict:
     if payload is None:
         raise HTTPException(status_code=404, detail="unknown run")
     return payload
+
+
+class AskRequest(BaseModel):
+    question: str
+
+
+@app.post("/api/reports/{run_id}/ask")
+def ask(run_id: int, body: AskRequest) -> dict:
+    question = body.question.strip()
+    if not question or len(question) > 500:
+        raise HTTPException(status_code=400, detail="question must be 1-500 characters")
+    conn = connect()
+    try:
+        result = ask_analyst(conn, run_id, question)
+    finally:
+        conn.close()
+    if not result.ok and result.error == "unknown run":
+        raise HTTPException(status_code=404, detail="unknown run")
+    return result.model_dump()
 
 
 @app.get("/api/health")

@@ -66,10 +66,14 @@ flowchart LR
    confidence) stored in their own table, so citation coverage is computed,
    not estimated. Trust model: `Verified` (company's own site) / `Reported`
    (secondary source) / `Interpretation` (labeled AI analysis).
-5. **Validation** — a deterministic pre-display pass flags unsourced factual
+5. **Ask the analyst** (post-V1 extension) — a bounded agent loop on every
+   report page: the model autonomously selects tools (claims, findings,
+   stored sources, fresh search, crawling) to answer follow-up questions,
+   capped at six turns, answers cited, tool trace visible in the UI.
+6. **Validation** — a deterministic pre-display pass flags unsourced factual
    claims, dangling citations, pricing claims without a primary pricing
    source, and judgment language in factual claims.
-6. **Evaluation** — a core feature, not an afterthought: a 10-product labeled
+7. **Evaluation** — a core feature, not an afterthought: a 10-product labeled
    benchmark, automated metrics, and a human review protocol for citation
    validity and hallucination rate.
 
