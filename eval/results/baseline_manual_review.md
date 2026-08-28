@@ -1,4 +1,4 @@
-# Manual review — v1
+# Manual review — baseline (pre-CP9 fix)
 
 For each sampled claim, open the cited source(s) and mark:
 - **valid**: the cited source directly supports the claim

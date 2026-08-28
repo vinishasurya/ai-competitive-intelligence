@@ -1,4 +1,4 @@
-# Benchmark results — v1
+# Benchmark results — baseline (pre-CP9 fix)
 
 10/10 products completed. Precision: strict = clearly-relevant only; lenient = not clearly irrelevant (defensible rubric). Pricing accuracy over 16 labeled tiers.
 
