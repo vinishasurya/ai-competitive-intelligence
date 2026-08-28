@@ -42,7 +42,7 @@ Pricing retrieval fix (rendered fallback + URL discovery + misattribution guard)
 
 ## Post-V1 extensions
 - ✅ **MCP server** (`backend/mcp_server.py`, `docs/mcp.md`) — research tools usable from any MCP client; live-verified.
-- ⬜ **"Ask the analyst" agent** — bounded tool-use loop for follow-up questions on a report (next).
+- ✅ **"Ask the analyst" agent** — bounded tool-use loop (5 tools, 6-turn cap, cited answers, visible trace) on every report page; live-verified on production (~4¢/question).
 
 ## Remaining to finish the project
 1. **Post-fix manual review** (`eval/results/post-fix_manual_review.md`) → fills citation-validity "improved 86.7% → X%" resume bullet (human task).
