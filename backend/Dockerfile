@@ -4,7 +4,8 @@ FROM mcr.microsoft.com/playwright/python:v1.62.0-noble
 
 WORKDIR /app
 COPY pyproject.toml uv.lock ./
-RUN pip install --no-cache-dir uv && uv export --no-dev --format requirements-txt > requirements.txt \
+RUN pip install --no-cache-dir uv \
+    && uv export --no-dev --no-emit-project --format requirements-txt > requirements.txt \
     && pip install --no-cache-dir -r requirements.txt
 
 COPY app ./app
