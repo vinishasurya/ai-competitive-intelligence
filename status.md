@@ -17,7 +17,7 @@
 | CP7 | Report UI | ✅ Done (2026-08-27, commit c5c90e0) |
 | CP8 | Evaluation suite (10-product benchmark) | ✅ Done (2026-08-27, commit 0a32a3a) |
 | CP9 | Iterate on worst failure mode | 🟡 Fix shipped + measured (+15pt pricing availability); manual re-review pending |
-| CP10 | Deploy & portfolio polish | 🟡 Deployed + live-verified; demo video & UI redesign pending |
+| CP10 | Deploy & portfolio polish | 🟡 Deployed, persistent, C2 UI live; demo video pending |
 
 ## Right now
 **Baseline benchmark published** (`eval/results/baseline.md` — evaluation runs are named `baseline` / `post-fix`, both measuring the V1 product): 10/10 products, category accuracy 100%, competitor precision 84% strict / 100% lenient, pricing 16/16 labeled tiers, citation coverage 100%, 1 flag, mean 142s / 34¢ per report — all design-doc targets exceeded. 66 passing tests. Product runs in browser at localhost:3000.
@@ -34,10 +34,16 @@ Pricing retrieval fix (rendered fallback + URL discovery + misattribution guard)
 - Verified end-to-end on production via headless browser: Linear report in 156s / $0.35, 100% cited, citations resolve.
 - Ops notes: FRONTEND_ORIGIN env wires CORS; git now pushes as vinishasurya via gh credential helper (old UmaRavisFamily keychain cred bypassed).
 
+## Since deploy (2026-08-28)
+- **C2 "Graphite & mint" UI live** (user-picked from mockups): stat-tile header, restyled trust badges, pricing comparison table (payload now includes structured `pricing`).
+- **Reports persist across deploys**: Railway volume at `/data` + `DATABASE_PATH` env — verified (report/1 survived a redeploy).
+- **JS-shell sites work** (Canva verified live); blocked sites get an honest error.
+- Anthropic credits topped up after an out-of-credits failure; recommend auto-reload + spend limit both set.
+
 ## Remaining to finish the project
 1. **Post-fix manual review** (`eval/results/post-fix_manual_review.md`) → fills citation-validity "improved 86.7% → X%" resume bullet (human task).
-2. **UI redesign** (user-requested) — iterate freely; every push auto-deploys. Keep trust elements prominent (badges, citations, retrieval dates, fetch-failed markers).
-3. **Demo video last** — re-record footage (`frontend/scripts/record-demo.mjs`) + CP7 screenshots against the final UI, then record narration per `docs/demo-script.md`; update README links.
+2. **Any further UI tweaks** — every push auto-deploys; reports now survive deploys.
+3. **Demo video last** — re-record footage (`frontend/scripts/record-demo.mjs`) against the C2 UI, narrate per `docs/demo-script.md`, link in README.
 
 ## Failure gallery entries (for CP10)
 1. Non-standard pricing paths (Jira) → URL discovery via links + search.
