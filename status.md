@@ -16,7 +16,7 @@
 | CP6 | Report generation & validation | ✅ Done (2026-08-27, commit 59c9a13) |
 | CP7 | Report UI | ✅ Done (2026-08-27, commit c5c90e0) |
 | CP8 | Evaluation suite (10-product benchmark) | ✅ Done (2026-08-27, commit 0a32a3a) |
-| CP9 | Iterate on worst failure mode | ⬜ Not started |
+| CP9 | Iterate on worst failure mode | 🟡 Fix shipped + measured (+15pt pricing availability); manual re-review pending |
 | CP10 | Deploy & portfolio polish | ⬜ Not started |
 
 ## Right now
@@ -25,12 +25,16 @@
 ## Manual review done (2026-08-27)
 30 claims reviewed by hand: **citation validity 86.7%, hallucination rate 0%**. All 4 invalids are pricing claims; 3 are JS-rendered pricing pages (Slack, Notion, Lovable). Still open: benchmark label audit (`eval/benchmark.json`) — optional before post-fix re-score; and the reason for the Linear pricing invalid mark (ask Ravi's team).
 
-## Next step
-CP9: fix the confirmed highest-impact failure mode — **pricing-page retrieval** (JS-rendered pages + non-standard paths like Jira's). Candidate fixes: headless-browser rendering fallback for pricing pages, and/or pricing-URL discovery from homepage links/search. Then re-run benchmark as post-fix for the before/after bullet.
+## CP9 measured (2026-08-28)
+Pricing retrieval fix (rendered fallback + URL discovery + misattribution guard): **pricing availability 70% → 85%**, everything else held, +2.2¢/+12s per report. Full table: `eval/results/comparison.md`.
 
-## Known failure modes (CP9 candidates)
-- Pricing at non-standard paths missed (Jira's is at /software/jira/pricing, not /pricing) → shows "unavailable" despite public pricing. Fix idea: discover pricing URLs from homepage links or search.
-- JS-rendered pricing (Notion) yields tier names without numbers — honest but incomplete.
+## Next step — ONE HUMAN TASK, then CP10
+Re-review `eval/results/post-fix_manual_review.md` (mark valid/invalid/hallucination; the pricing claims are the ones that changed) → produces post-fix citation validity + hallucination rate → closes CP9 and fills the "improved from 86.7% to X%" resume bullet. Then CP10: deploy + README + failure gallery + demo video.
+
+## Failure gallery entries (for CP10)
+1. Non-standard pricing paths (Jira) → URL discovery via links + search.
+2. JS-rendered pricing (Slack/Notion/Lovable) → headless-browser fallback reading visible text.
+3. Sibling-product price misattribution risk (Atlassian/Microsoft) → product-name guard; deliberate "unavailable > wrong".
 
 ## Blockers / open questions
 - Housekeeping for the user: delete the stale `export ANTHROPIC_API_KEY=sk-ant-xxx...` placeholder from `~/.zshrc` (the code now overrides it, but it can confuse other tools).
