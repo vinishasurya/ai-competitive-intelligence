@@ -60,8 +60,12 @@ def test_build_profile_soft_fails_when_nothing_crawls(monkeypatch):
         profiler, "crawl_page",
         lambda url, **k: CrawlResult(ok=False, url=url, fetched_at="t", error="down"),
     )
+    monkeypatch.setattr(
+        profiler, "crawl_page_rendered",
+        lambda url, **k: CrawlResult(ok=False, url=url, fetched_at="t", error="down"),
+    )
     result = build_profile("https://acme.test")
-    assert not result.ok and "no pages" in result.error
+    assert not result.ok and "blocks automated access" in result.error
 
 
 def test_build_profile_happy_path(monkeypatch):
@@ -106,3 +110,37 @@ def test_build_profile_soft_fails_on_model_error(monkeypatch):
     result = build_profile("https://acme.test")
     assert not result.ok and "api down" in result.error
     assert result.pages  # crawled evidence is still preserved
+
+
+class TestJsShellFallback:
+    def test_rendered_homepage_used_when_static_text_is_a_shell(self, monkeypatch):
+        shell = _page("https://canva.test", "Loading... app shell")  # tiny text
+        monkeypatch.setattr(profiler, "crawl_page", lambda url, **k: shell)
+        monkeypatch.setattr(
+            profiler, "crawl_page_rendered",
+            lambda url, **k: _page(url, "Canva: design anything. " * 50),
+        )
+        pages = collect_pages("https://canva.test")
+        assert len(pages[0].raw_text) > 1000  # rendered page leads
+
+    def test_no_rendered_call_when_static_is_rich(self, monkeypatch):
+        rich = _page("https://acme.test", "Real homepage content. " * 50)
+        monkeypatch.setattr(profiler, "crawl_page", lambda url, **k: rich)
+
+        def boom(url, **k):
+            raise AssertionError("rendered fetch should not be called")
+        monkeypatch.setattr(profiler, "crawl_page_rendered", boom)
+        pages = collect_pages("https://acme.test")
+        assert pages
+
+    def test_blocked_site_error_message(self, monkeypatch):
+        monkeypatch.setattr(
+            profiler, "crawl_page",
+            lambda url, **k: CrawlResult(ok=False, url=url, fetched_at="t", error="HTTP 403"),
+        )
+        monkeypatch.setattr(
+            profiler, "crawl_page_rendered",
+            lambda url, **k: CrawlResult(ok=False, url=url, fetched_at="t", error="render: blocked"),
+        )
+        result = build_profile("https://blocked.test")
+        assert not result.ok and "blocks automated access" in result.error

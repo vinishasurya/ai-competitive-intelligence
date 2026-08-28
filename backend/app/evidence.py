@@ -160,6 +160,14 @@ def collect_sources(
         if link and link not in {r.url for r in pricing_attempts}:
             store("pricing", crawl_page(link))
 
+    # JS-shell fallback: nothing usable from static fetches -> render the
+    # homepage in a real browser and store that as the homepage source.
+    total_chars = sum(len(r.raw_text or "") for _, _, r in stored if r.ok)
+    if total_chars < 400:
+        rendered = crawl_page_rendered(f"https://{domain}")
+        if rendered.ok:
+            store("homepage", rendered)
+
     return stored
 
 

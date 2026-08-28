@@ -13,10 +13,12 @@ import anthropic
 from pydantic import BaseModel, Field
 
 from app import config
-from app.tools.crawl import CrawlResult, crawl_page
+from app.tools.crawl import CrawlResult, crawl_page, crawl_page_rendered
 
 CANDIDATE_PATHS = ["", "/pricing", "/features", "/about", "/product"]
 MAX_CHARS_PER_PAGE = 12_000
+# Below this much total text, the static crawl likely got a JS shell.
+MIN_STATIC_CHARS = 400
 
 SYSTEM_PROMPT = """You are a product analyst building a structured profile of a \
 software product from its own website.
@@ -93,6 +95,14 @@ def collect_pages(url: str) -> list[CrawlResult]:
         if result.ok and result.content_hash not in seen_hashes:
             seen_hashes.add(result.content_hash)
             pages.append(result)
+
+    # JS-shell fallback: static fetches "succeeded" but got almost no text
+    # (or nothing at all) — render the homepage in a real browser.
+    total_chars = sum(len(p.raw_text or "") for p in pages)
+    if total_chars < MIN_STATIC_CHARS:
+        rendered = crawl_page_rendered(url)
+        if rendered.ok and len(rendered.raw_text or "") > total_chars:
+            pages.insert(0, rendered)
     return pages
 
 
@@ -132,7 +142,9 @@ def build_profile(raw_url: str) -> ProfileResult:
     pages = collect_pages(url)
     if not pages:
         return ProfileResult(
-            ok=False, url=url, error="no pages could be crawled from this site"
+            ok=False, url=url,
+            error="could not read this site — it likely blocks automated access "
+                  "from cloud servers; try a different product",
         )
 
     domain = urlparse(url).hostname
