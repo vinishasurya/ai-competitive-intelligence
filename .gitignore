@@ -28,3 +28,6 @@ next-env.d.ts
 .DS_Store
 .vscode/
 .idea/
+*.db-wal
+*.db-shm
+*.db-journal
