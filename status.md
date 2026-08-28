@@ -40,6 +40,10 @@ Pricing retrieval fix (rendered fallback + URL discovery + misattribution guard)
 - **JS-shell sites work** (Canva verified live); blocked sites get an honest error.
 - Anthropic credits topped up after an out-of-credits failure; recommend auto-reload + spend limit both set.
 
+## Post-V1 extensions
+- ✅ **MCP server** (`backend/mcp_server.py`, `docs/mcp.md`) — research tools usable from any MCP client; live-verified.
+- ⬜ **"Ask the analyst" agent** — bounded tool-use loop for follow-up questions on a report (next).
+
 ## Remaining to finish the project
 1. **Post-fix manual review** (`eval/results/post-fix_manual_review.md`) → fills citation-validity "improved 86.7% → X%" resume bullet (human task).
 2. **Any further UI tweaks** — every push auto-deploys; reports now survive deploys.
