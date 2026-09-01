@@ -114,7 +114,8 @@ uv run python ../eval/run_eval.py --version my-run
 - `backend/mcp_server.py` — the research tools exposed as an
   [MCP server](docs/mcp.md) usable from Claude Desktop / Claude Code
 - `eval/` — benchmark labels, runner, published results
-- `docs/` — [failure gallery](docs/failure-gallery.md) ·
+- `docs/` — [AI architecture](docs/architecture.md) ·
+  [failure gallery](docs/failure-gallery.md) ·
   [design decisions & deviations](docs/design-decisions.md) ·
   [deployment guide](docs/deployment.md) · original design doc (PDF)
 - `journal.md` / `status.md` — the project's build log and living status
